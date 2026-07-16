@@ -1,0 +1,97 @@
+import js from "@eslint/js";
+import boundaries from "eslint-plugin-boundaries";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
+  { ignores: ["dist/", "src-tauri/target/"] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    languageOptions: {
+      globals: globals.browser,
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "react-refresh/only-export-components": "warn",
+    },
+  },
+  // Layer boundaries: ui → application → domain; infrastructure implements
+  // application ports. Violations are build errors, not review comments.
+  // Files outside the four layers (src/main.tsx composition root) are not
+  // classified as elements, so they stay unrestricted.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    plugins: { boundaries },
+    settings: {
+      "import/resolver": { typescript: {} },
+      "boundaries/elements": [
+        { type: "domain", pattern: "src/domain" },
+        { type: "application", pattern: "src/application" },
+        { type: "infrastructure", pattern: "src/infrastructure" },
+        { type: "ui", pattern: "src/ui" },
+        // catch-all for src root files (main.tsx composition root)
+        { type: "app", pattern: "src" },
+      ],
+    },
+    rules: {
+      "boundaries/dependencies": [
+        "error",
+        {
+          // last matching policy wins
+          default: "disallow",
+          checkAllOrigins: true,
+          policies: [
+            // external npm modules are allowed by default…
+            { allow: { to: { module: { source: "**" } } } },
+            { from: { element: { types: "domain" } }, allow: { to: { element: { types: "domain" } } } },
+            {
+              from: { element: { types: "application" } },
+              allow: { to: { element: { types: { anyOf: ["application", "domain"] } } } },
+            },
+            {
+              from: { element: { types: "infrastructure" } },
+              allow: {
+                to: { element: { types: { anyOf: ["infrastructure", "application", "domain"] } } },
+              },
+            },
+            {
+              from: { element: { types: "ui" } },
+              allow: { to: { element: { types: { anyOf: ["ui", "application", "domain"] } } } },
+            },
+            // composition root wires everything together
+            {
+              from: { element: { types: "app" } },
+              allow: {
+                to: {
+                  element: {
+                    types: { anyOf: ["app", "ui", "application", "infrastructure", "domain"] },
+                  },
+                },
+              },
+            },
+            // …except: only infrastructure may talk to Tauri
+            {
+              from: { element: { types: { anyOf: ["domain", "application", "ui"] } } },
+              disallow: { to: { module: { source: "@tauri-apps/*" } } },
+              message: "@tauri-apps/* is only allowed in infrastructure/",
+            },
+            // …and domain stays pure: no React
+            {
+              from: { element: { types: "domain" } },
+              disallow: { to: { module: { source: ["react", "react-dom"] } } },
+              message: "domain/ must not depend on React",
+            },
+          ],
+        },
+      ],
+    },
+  },
+);
