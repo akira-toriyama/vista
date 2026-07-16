@@ -162,6 +162,32 @@ describe("createFurrowClient mutations", () => {
     ]);
   });
 
+  it("setTask maps placement onto --before/--after/-p in the same write", async () => {
+    const { calls, exec } = fakeExec(shard);
+    const client = createFurrowClient(exec);
+    await client.setTask("t-a", { status: "ready", placement: { before: "t-x" } });
+    await client.setTask("t-a", { placement: { after: "t-y" } });
+    await client.setTask("t-a", { placement: { priority: 150 } });
+    expect(calls).toEqual([
+      ["set", "t-a", "--json", "-s", "ready", "--before", "t-x"],
+      ["set", "t-a", "--json", "--after", "t-y"],
+      ["set", "t-a", "--json", "-p", "150"],
+    ]);
+  });
+
+  it("reorderTask slots relative to a sibling or at an absolute priority", async () => {
+    const { calls, exec } = fakeExec(shard);
+    const client = createFurrowClient(exec);
+    await client.reorderTask("t-a", { before: "t-x" });
+    await client.reorderTask("t-a", { after: "t-y" });
+    await client.reorderTask("t-a", { priority: 90 });
+    expect(calls).toEqual([
+      ["reorder", "t-a", "--json", "--before", "t-x"],
+      ["reorder", "t-a", "--json", "--after", "t-y"],
+      ["reorder", "t-a", "90", "--json"],
+    ]);
+  });
+
   it("doneTask / retitleTask build their commands", async () => {
     const { calls, exec } = fakeExec(shard);
     const client = createFurrowClient(exec);

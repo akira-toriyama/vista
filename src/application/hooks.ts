@@ -5,7 +5,8 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 import { useEffect } from "react";
-import type { Lane } from "@/domain/task";
+import { columnize, optimisticPriority, type DropPlan } from "@/domain/kanban";
+import type { Lane, Task } from "@/domain/task";
 import type { AddTaskInput, SetTaskPatch, TaskFilter } from "./furrow-port";
 import { useFurrowPort } from "./furrow-port-context";
 import { boardKeys, taskKeys } from "./query-keys";
@@ -61,6 +62,58 @@ export function useSetTask() {
   return useTaskMutation(({ id, patch }: { id: string; patch: SetTaskPatch }) =>
     port.setTask(id, patch),
   );
+}
+
+/** One board drop, as planned by domain planDrop. */
+export interface DropTaskInput {
+  id: string;
+  targetLane: Lane;
+  plan: DropPlan;
+  /** the filter behind the board's list query — names the cache entry to patch. */
+  filter?: TaskFilter;
+}
+
+/**
+ * Execute a drop plan as its single furrow write, with an optimistic cache
+ * patch so the card lands instantly (no spinner): reorder → `reorder`,
+ * cross-lane with position → `set -s --before/--after`, into an empty
+ * column → `move`. Rolled back on error, reconciled by the settle refetch.
+ */
+export function useDropTask(): UseMutationResult<unknown, Error, DropTaskInput> {
+  const port = useFurrowPort();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, targetLane, plan }: DropTaskInput) => {
+      if (plan.kind === "reorder") return port.reorderTask(id, plan.placement);
+      if (plan.placement !== undefined)
+        return port.setTask(id, { status: targetLane, placement: plan.placement });
+      return port.moveTask(id, targetLane);
+    },
+    onMutate: async ({ id, targetLane, plan, filter }) => {
+      await queryClient.cancelQueries({ queryKey: taskKeys.all });
+      const key = taskKeys.list(filter);
+      const snapshot = queryClient.getQueryData<Task[]>(key);
+      if (snapshot !== undefined) {
+        const targetCards = columnize(snapshot, [targetLane]).get(targetLane) ?? [];
+        queryClient.setQueryData<Task[]>(
+          key,
+          snapshot.map((task) => {
+            if (task.id !== id) return task;
+            const priority =
+              plan.placement === undefined
+                ? task.priority
+                : optimisticPriority(targetCards, plan.placement, id);
+            return { ...task, status: targetLane, priority };
+          }),
+        );
+      }
+      return { key, snapshot };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.snapshot !== undefined) queryClient.setQueryData(context.key, context.snapshot);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: taskKeys.all }),
+  });
 }
 
 export function useDoneTask() {

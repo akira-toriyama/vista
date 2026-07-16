@@ -3,7 +3,13 @@ import {
   kindForExitCode,
   type FurrowErrorEnvelope,
 } from "@/application/furrow-error";
-import type { AddTaskInput, FurrowPort, SetTaskPatch, TaskFilter } from "@/application/furrow-port";
+import type {
+  AddTaskInput,
+  FurrowPort,
+  Placement,
+  SetTaskPatch,
+  TaskFilter,
+} from "@/application/furrow-port";
 import type { FurrowExec } from "./exec";
 
 /**
@@ -16,6 +22,12 @@ import type { FurrowExec } from "./exec";
  * an exec call, so it stays with the concrete adapter.
  */
 export type FurrowClient = Omit<FurrowPort, "subscribeTasksChanged">;
+
+/** Placement as flags (`set`, and relative `reorder`; absolute reorder is positional). */
+function placementFlags(placement: Placement): string[] {
+  if ("priority" in placement) return ["-p", String(placement.priority)];
+  return "before" in placement ? ["--before", placement.before] : ["--after", placement.after];
+}
 
 export function createFurrowClient(exec: FurrowExec): FurrowClient {
   async function run<T>(args: string[]): Promise<T> {
@@ -77,6 +89,7 @@ export function createFurrowClient(exec: FurrowExec): FurrowClient {
     setTask: (id, patch: SetTaskPatch) => {
       const args = ["set", id, "--json"];
       if (patch.status !== undefined) args.push("-s", patch.status);
+      if (patch.placement !== undefined) args.push(...placementFlags(patch.placement));
       if (patch.value === null) args.push("--clear-value");
       else if (patch.value !== undefined) args.push("--value", String(patch.value));
       if (patch.effort === null) args.push("--clear-effort");
@@ -86,6 +99,11 @@ export function createFurrowClient(exec: FurrowExec): FurrowClient {
       if (patch.type !== undefined) args.push("--type", patch.type);
       return run(args);
     },
+
+    reorderTask: (id, placement: Placement) =>
+      "priority" in placement
+        ? run(["reorder", id, String(placement.priority), "--json"])
+        : run(["reorder", id, "--json", ...placementFlags(placement)]),
 
     doneTask: (id) => run(["done", id, "--json"]),
 

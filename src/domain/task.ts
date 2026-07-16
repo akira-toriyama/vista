@@ -25,15 +25,25 @@ export interface TaskDetail extends TaskShard {
 /** A lane name from the board's config.toml [lanes].order. */
 export type Lane = string;
 
+/** One neighbor's priority move when a relative placement respaced the lane. */
+export interface RenumberedMove {
+  id: string;
+  from: number;
+  to: number;
+}
+
 /**
  * What every furrow mutation except `add` returns: the shard before and
  * after the write, plus which top-level fields changed. `add` has no
- * "before", so it returns the bare shard instead.
+ * "before", so it returns the bare shard instead. `renumbered` appears only
+ * when a --before/--after placement exhausted the sparse gap and the whole
+ * lane was respaced in the same write.
  */
 export interface MutationReport {
   after: TaskShard;
   before: TaskShard;
   changed: string[];
+  renumbered?: RenumberedMove[];
 }
 
 /** id+title+status triple used by `furrow dep --list --json`. */
