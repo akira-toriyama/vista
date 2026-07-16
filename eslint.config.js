@@ -23,6 +23,13 @@ export default tseslint.config(
       "react-refresh/only-export-components": "warn",
     },
   },
+  // vendored shadcn/ui components export variants alongside components
+  {
+    files: ["src/ui/components/ui/**/*.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
   // Layer boundaries: ui → application → domain; infrastructure implements
   // application ports. Violations are build errors, not review comments.
   // Files outside the four layers (src/main.tsx composition root) are not

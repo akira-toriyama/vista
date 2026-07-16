@@ -1,7 +1,10 @@
+import { Button } from "@/ui/components/ui/button";
+
 function App() {
   return (
-    <main>
-      <h1>vista</h1>
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4">
+      <h1 className="text-2xl font-semibold">vista</h1>
+      <Button variant="outline">placeholder</Button>
     </main>
   );
 }
