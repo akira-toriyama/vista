@@ -1,0 +1,52 @@
+# PR gate for the JS and Rust halves of the Tauri app. Third-party actions are
+# hash-pinned per the fleet pinning policy (.github/zizmor.yml); actions/* ride tags.
+name: ci
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  js:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      # pnpm version comes from package.json "packageManager"
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      # unit only: contract tests need the host furrow binary, absent in CI
+      - run: pnpm test:unit
+      # vite build also proves allowBuilds (esbuild) took effect in CI
+      - run: pnpm build
+
+  rust:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: src-tauri
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal
+      - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        with:
+          workspaces: src-tauri
+      # generate_context! requires frontendDist (../dist) to exist even for check
+      - run: mkdir -p ../dist
+      - run: cargo check --locked
