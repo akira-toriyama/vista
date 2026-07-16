@@ -30,6 +30,20 @@ export default tseslint.config(
       "react-refresh/only-export-components": "off",
     },
   },
+  // context modules pair a provider component with its accessor hook by design
+  {
+    files: ["src/**/*-context.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
+  // node-run codegen/build scripts
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
   // Layer boundaries: ui → application → domain; infrastructure implements
   // application ports. Violations are build errors, not review comments.
   // Files outside the four layers (src/main.tsx composition root) are not
