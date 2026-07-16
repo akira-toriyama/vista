@@ -2,6 +2,7 @@ mod board;
 mod error;
 mod exec;
 mod locate;
+mod watch;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
