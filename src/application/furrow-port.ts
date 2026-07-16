@@ -1,4 +1,5 @@
 import type { BoardInfo } from "@/domain/board";
+import type { RelativePlacement } from "@/domain/kanban";
 import type {
   DepNeighborhood,
   Lane,
@@ -33,9 +34,18 @@ export interface AddTaskInput {
   type?: string;
 }
 
-/** One `furrow set` write: lane + estimates + labels combined. */
+/**
+ * Where to slot a task within a lane: immediately before/after a sibling
+ * (furrow computes the sparse priority, respacing atomically if the gap is
+ * exhausted), or an absolute sparse priority.
+ */
+export type Placement = RelativePlacement | { priority: number };
+
+/** One `furrow set` write: lane + position + estimates + labels combined. */
 export interface SetTaskPatch {
   status?: Lane;
+  /** position in the destination lane — lane move + placement stay one write. */
+  placement?: Placement;
   /** 1..5, or null to clear. */
   value?: number | null;
   /** 1..5, or null to clear. */
@@ -51,8 +61,8 @@ export interface SetTaskPatch {
  * contract tests). All logic lives in furrow; this surface is a thin,
  * typed mirror of its CLI/JSON contract.
  *
- * Deliberately absent until their feature tasks land: sync (sync-integration
- * task) and reorder (waits on furrow --before/--after, t-phgp).
+ * Deliberately absent until its feature task lands: sync (sync-integration
+ * task).
  */
 export interface FurrowPort {
   board(): Promise<BoardInfo>;
@@ -62,6 +72,8 @@ export interface FurrowPort {
   addTask(input: AddTaskInput): Promise<TaskShard>;
   moveTask(id: string, lane: Lane): Promise<MutationReport>;
   setTask(id: string, patch: SetTaskPatch): Promise<MutationReport>;
+  /** within-lane DnD: one write, both ids must share a lane. */
+  reorderTask(id: string, placement: Placement): Promise<MutationReport>;
   doneTask(id: string): Promise<MutationReport>;
   retitleTask(id: string, title: string): Promise<MutationReport>;
   setChecklistItem(id: string, index: number, done: boolean): Promise<MutationReport>;

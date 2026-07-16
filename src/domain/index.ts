@@ -4,5 +4,6 @@
  */
 export * from "./board";
 export * from "./dep-graph";
+export * from "./kanban";
 export * from "./task";
 export * from "./task-id";

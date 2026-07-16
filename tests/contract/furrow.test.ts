@@ -167,6 +167,63 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
     expect(cleared.after.value).toBeUndefined();
   });
 
+  it("reorderTask --before/--after slots the task between its lane siblings", async () => {
+    const top = await client.addTask({ title: "contract: reorder top", priority: 100 });
+    const bottom = await client.addTask({ title: "contract: reorder bottom", priority: 200 });
+    const moved = await client.addTask({ title: "contract: reorder me", priority: 300 });
+
+    const before = await client.reorderTask(moved.id, { before: bottom.id });
+    expect(before.changed).toContain("priority");
+    expect(before.after.priority).toBeGreaterThan(top.priority);
+    expect(before.after.priority).toBeLessThan(bottom.priority);
+
+    const after = await client.reorderTask(moved.id, { after: bottom.id });
+    expect(after.after.priority).toBeGreaterThan(bottom.priority);
+  });
+
+  it("reorderTask respaces an exhausted gap atomically and reports renumbered", async () => {
+    const first = await client.addTask({ title: "contract: gap a", priority: 1000 });
+    await client.addTask({ title: "contract: gap b", priority: 1001 });
+    const squeezed = await client.addTask({ title: "contract: gap squeeze", priority: 2000 });
+    const report = await client.reorderTask(squeezed.id, { after: first.id });
+    expect(report.renumbered).toBeDefined();
+    expect(report.renumbered!.length).toBeGreaterThan(0);
+    for (const move of report.renumbered!) {
+      expect(move).toMatchObject({ id: expect.stringMatching(/^t-/) });
+      expect(typeof move.from).toBe("number");
+      expect(typeof move.to).toBe("number");
+    }
+  });
+
+  it("setTask lands lane + relative position in one write (cross-lane drop)", async () => {
+    const board = await client.board();
+    const lane = board.lanes.find((l) => l !== board.default_lane && l !== board.done_lane)!;
+    const anchor = await client.addTask({ title: "contract: drop anchor", status: lane });
+    const dropped = await client.addTask({ title: "contract: dropped card" });
+    const report = await client.setTask(dropped.id, {
+      status: lane,
+      placement: { before: anchor.id },
+    });
+    expect(report.after.status).toBe(lane);
+    expect(report.after.priority).toBeLessThan(anchor.priority);
+    expect(report.changed).toEqual(expect.arrayContaining(["status", "priority"]));
+  });
+
+  it("reorderTask across lanes is refused as validation", async () => {
+    const board = await client.board();
+    const lane = board.lanes.find((l) => l !== board.default_lane && l !== board.done_lane)!;
+    const here = await client.addTask({ title: "contract: reorder here" });
+    const there = await client.addTask({ title: "contract: reorder there", status: lane });
+    const err = await client.reorderTask(here.id, { before: there.id }).then(
+      () => {
+        throw new Error("expected rejection");
+      },
+      (e: unknown) => e,
+    );
+    expect(err).toBeInstanceOf(FurrowError);
+    expect((err as FurrowError).kind).toBe("validation");
+  });
+
   it("retitleTask renames without touching the id", async () => {
     const added = await client.addTask({ title: "contract: old title" });
     const renamed = await client.retitleTask(added.id, "contract: new title");
