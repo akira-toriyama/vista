@@ -1,3 +1,4 @@
+mod board;
 mod error;
 mod exec;
 mod locate;
