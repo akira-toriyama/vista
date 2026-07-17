@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { columnize, optimisticPriority, planDrop } from "./kanban";
 
 /** Minimal card — kanban logic only reads id/status/priority. */
-const card = (id: string, status: string, priority: number) => ({ id, status, priority });
+const card = (id: string, status: string, priority: number) => ({
+  id,
+  status,
+  priority,
+});
 
 describe("columnize", () => {
   it("groups by lane in board order, each column sorted by priority ascending", () => {
@@ -37,7 +41,11 @@ describe("columnize", () => {
 });
 
 describe("planDrop", () => {
-  const ready = [card("t-1", "ready", 100), card("t-2", "ready", 200), card("t-3", "ready", 300)];
+  const ready = [
+    card("t-1", "ready", 100),
+    card("t-2", "ready", 200),
+    card("t-3", "ready", 300),
+  ];
 
   it("same lane, top edge of a later card → reorder before it", () => {
     const plan = planDrop({
@@ -154,7 +162,11 @@ describe("planDrop", () => {
 });
 
 describe("optimisticPriority", () => {
-  const cards = [card("t-1", "ready", 100), card("t-2", "ready", 200), card("t-3", "ready", 300)];
+  const cards = [
+    card("t-1", "ready", 100),
+    card("t-2", "ready", 200),
+    card("t-3", "ready", 300),
+  ];
 
   it("between two cards → midpoint of the anchor and its neighbor", () => {
     expect(optimisticPriority(cards, { before: "t-3" }, "t-x")).toBe(250);
@@ -162,8 +174,12 @@ describe("optimisticPriority", () => {
   });
 
   it("before the first card / after the last card → just outside the range", () => {
-    expect(optimisticPriority(cards, { before: "t-1" }, "t-x")).toBeLessThan(100);
-    expect(optimisticPriority(cards, { after: "t-3" }, "t-x")).toBeGreaterThan(300);
+    expect(optimisticPriority(cards, { before: "t-1" }, "t-x")).toBeLessThan(
+      100,
+    );
+    expect(optimisticPriority(cards, { after: "t-3" }, "t-x")).toBeGreaterThan(
+      300,
+    );
   });
 
   it("ignores the dragged card when picking the neighbor (same-lane reorder)", () => {
@@ -172,6 +188,8 @@ describe("optimisticPriority", () => {
   });
 
   it("unknown anchor falls back to keeping order stable at the end", () => {
-    expect(optimisticPriority(cards, { before: "t-missing" }, "t-x")).toBeGreaterThan(300);
+    expect(
+      optimisticPriority(cards, { before: "t-missing" }, "t-x"),
+    ).toBeGreaterThan(300);
   });
 });

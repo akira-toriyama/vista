@@ -46,7 +46,16 @@ describe("createFurrowClient reads", () => {
       repos: ["o/r1", "o/r2"],
     });
     expect(calls).toEqual([
-      ["ls", "--json", "-s", "ready,in-progress", "-l", "bug", "-r", "o/r1,o/r2"],
+      [
+        "ls",
+        "--json",
+        "-s",
+        "ready,in-progress",
+        "-l",
+        "bug",
+        "-r",
+        "o/r1,o/r2",
+      ],
     ]);
   });
 
@@ -65,7 +74,9 @@ describe("createFurrowClient reads", () => {
   });
 
   it("listDeps runs `dep <id> --list --json`", async () => {
-    const { calls, exec } = fakeExec(ok({ id: "t-a", depends_on: [], blocks: [] }));
+    const { calls, exec } = fakeExec(
+      ok({ id: "t-a", depends_on: [], blocks: [] }),
+    );
     await createFurrowClient(exec).listDeps("t-a");
     expect(calls).toEqual([["dep", "t-a", "--list", "--json"]]);
   });
@@ -165,7 +176,10 @@ describe("createFurrowClient mutations", () => {
   it("setTask maps placement onto --before/--after/-p in the same write", async () => {
     const { calls, exec } = fakeExec(shard);
     const client = createFurrowClient(exec);
-    await client.setTask("t-a", { status: "ready", placement: { before: "t-x" } });
+    await client.setTask("t-a", {
+      status: "ready",
+      placement: { before: "t-x" },
+    });
     await client.setTask("t-a", { placement: { after: "t-y" } });
     await client.setTask("t-a", { placement: { priority: 150 } });
     expect(calls).toEqual([
@@ -223,14 +237,20 @@ describe("createFurrowClient mutations", () => {
 });
 
 describe("createFurrowClient error mapping", () => {
-  const envelope = (code: number, message: string, extra: object = {}): ExecResult => ({
+  const envelope = (
+    code: number,
+    message: string,
+    extra: object = {},
+  ): ExecResult => ({
     code,
     stdout: "",
     stderr: JSON.stringify({ error: { code, message, ...extra } }),
   });
 
   it("exit 1 → kind not-found, envelope preserved", async () => {
-    const { exec } = fakeExec(envelope(1, "task not found: t-x", { details: { missing: ["t-x"] } }));
+    const { exec } = fakeExec(
+      envelope(1, "task not found: t-x", { details: { missing: ["t-x"] } }),
+    );
     const err = await thrown(createFurrowClient(exec).showTask("t-x"));
     expect(err.kind).toBe("not-found");
     expect(err.exitCode).toBe(1);
@@ -251,7 +271,11 @@ describe("createFurrowClient error mapping", () => {
   });
 
   it("non-JSON stderr still becomes a FurrowError carrying the raw text", async () => {
-    const { exec } = fakeExec({ code: 2, stdout: "", stderr: "plain panic text" });
+    const { exec } = fakeExec({
+      code: 2,
+      stdout: "",
+      stderr: "plain panic text",
+    });
     const err = await thrown(createFurrowClient(exec).listTasks());
     expect(err.kind).toBe("validation");
     expect(err.message).toContain("plain panic text");

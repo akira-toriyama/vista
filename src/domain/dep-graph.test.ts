@@ -22,7 +22,11 @@ describe("buildDepGraph", () => {
   });
 
   it("preserves furrow's canonical input order in nodes and edges", () => {
-    const g = buildDepGraph([task("t-c", ["t-a", "t-b"]), task("t-a"), task("t-b", ["t-a"])]);
+    const g = buildDepGraph([
+      task("t-c", ["t-a", "t-b"]),
+      task("t-a"),
+      task("t-b", ["t-a"]),
+    ]);
     expect(g.nodes.map((n) => n.id)).toEqual(["t-c", "t-a", "t-b"]);
     expect(g.edges).toEqual([
       { from: "t-a", to: "t-c" },

@@ -18,17 +18,26 @@ export function useBoardInfo() {
 
 export function useTaskList(filter?: TaskFilter) {
   const port = useFurrowPort();
-  return useQuery({ queryKey: taskKeys.list(filter), queryFn: () => port.listTasks(filter) });
+  return useQuery({
+    queryKey: taskKeys.list(filter),
+    queryFn: () => port.listTasks(filter),
+  });
 }
 
 export function useTaskDetail(id: string) {
   const port = useFurrowPort();
-  return useQuery({ queryKey: taskKeys.detail(id), queryFn: () => port.showTask(id) });
+  return useQuery({
+    queryKey: taskKeys.detail(id),
+    queryFn: () => port.showTask(id),
+  });
 }
 
 export function useDepNeighborhood(id: string) {
   const port = useFurrowPort();
-  return useQuery({ queryKey: taskKeys.deps(id), queryFn: () => port.listDeps(id) });
+  return useQuery({
+    queryKey: taskKeys.deps(id),
+    queryFn: () => port.listDeps(id),
+  });
 }
 
 /**
@@ -54,7 +63,9 @@ export function useAddTask() {
 
 export function useMoveTask() {
   const port = useFurrowPort();
-  return useTaskMutation(({ id, lane }: { id: string; lane: Lane }) => port.moveTask(id, lane));
+  return useTaskMutation(({ id, lane }: { id: string; lane: Lane }) =>
+    port.moveTask(id, lane),
+  );
 }
 
 export function useSetTask() {
@@ -79,14 +90,21 @@ export interface DropTaskInput {
  * cross-lane with position → `set -s --before/--after`, into an empty
  * column → `move`. Rolled back on error, reconciled by the settle refetch.
  */
-export function useDropTask(): UseMutationResult<unknown, Error, DropTaskInput> {
+export function useDropTask(): UseMutationResult<
+  unknown,
+  Error,
+  DropTaskInput
+> {
   const port = useFurrowPort();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, targetLane, plan }: DropTaskInput) => {
       if (plan.kind === "reorder") return port.reorderTask(id, plan.placement);
       if (plan.placement !== undefined)
-        return port.setTask(id, { status: targetLane, placement: plan.placement });
+        return port.setTask(id, {
+          status: targetLane,
+          placement: plan.placement,
+        });
       return port.moveTask(id, targetLane);
     },
     onMutate: async ({ id, targetLane, plan, filter }) => {
@@ -94,7 +112,8 @@ export function useDropTask(): UseMutationResult<unknown, Error, DropTaskInput> 
       const key = taskKeys.list(filter);
       const snapshot = queryClient.getQueryData<Task[]>(key);
       if (snapshot !== undefined) {
-        const targetCards = columnize(snapshot, [targetLane]).get(targetLane) ?? [];
+        const targetCards =
+          columnize(snapshot, [targetLane]).get(targetLane) ?? [];
         queryClient.setQueryData<Task[]>(
           key,
           snapshot.map((task) => {
@@ -110,7 +129,8 @@ export function useDropTask(): UseMutationResult<unknown, Error, DropTaskInput> 
       return { key, snapshot };
     },
     onError: (_error, _input, context) => {
-      if (context?.snapshot !== undefined) queryClient.setQueryData(context.key, context.snapshot);
+      if (context?.snapshot !== undefined)
+        queryClient.setQueryData(context.key, context.snapshot);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: taskKeys.all }),
   });
@@ -130,14 +150,17 @@ export function useRetitleTask() {
 
 export function useSetChecklistItem() {
   const port = useFurrowPort();
-  return useTaskMutation(({ id, index, done }: { id: string; index: number; done: boolean }) =>
-    port.setChecklistItem(id, index, done),
+  return useTaskMutation(
+    ({ id, index, done }: { id: string; index: number; done: boolean }) =>
+      port.setChecklistItem(id, index, done),
   );
 }
 
 export function useAddDeps() {
   const port = useFurrowPort();
-  return useTaskMutation(({ id, deps }: { id: string; deps: string[] }) => port.addDeps(id, deps));
+  return useTaskMutation(({ id, deps }: { id: string; deps: string[] }) =>
+    port.addDeps(id, deps),
+  );
 }
 
 export function useRemoveDeps() {

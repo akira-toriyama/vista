@@ -27,12 +27,11 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
-      # unit only: contract tests need the host furrow binary, absent in CI
-      - run: pnpm test:unit
-      # vite build also proves allowBuilds (esbuild) took effect in CI
-      - run: pnpm build
+      # the one gate, identical to local `pnpm check`: types/lint/format/test/
+      # build. Contract tests skip themselves when the furrow binary is absent
+      # (describe.skipIf), so check:test degrades to unit-only here. The build
+      # step also proves allowBuilds (esbuild) took effect in CI.
+      - run: pnpm check
 
   rust:
     runs-on: macos-latest

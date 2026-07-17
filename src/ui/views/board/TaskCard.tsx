@@ -1,5 +1,8 @@
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -43,18 +46,29 @@ export function TaskCard({ task, lane, display, readOnly }: TaskCardProps) {
           input,
           allowedEdges: ["top", "bottom"],
         }),
-      canDrop: ({ source }) => isCardDragData(source.data) && source.data.id !== task.id,
-      onDrag: ({ self }) => { setClosestEdge(extractClosestEdge(self.data)); },
-      onDragLeave: () => { setClosestEdge(null); },
-      onDrop: () => { setClosestEdge(null); },
+      canDrop: ({ source }) =>
+        isCardDragData(source.data) && source.data.id !== task.id,
+      onDrag: ({ self }) => {
+        setClosestEdge(extractClosestEdge(self.data));
+      },
+      onDragLeave: () => {
+        setClosestEdge(null);
+      },
+      onDrop: () => {
+        setClosestEdge(null);
+      },
     });
     if (readOnly) return dropTarget;
     return combine(
       draggable({
         element,
         getInitialData: () => cardDragData(task.id, lane),
-        onDragStart: () => { setIsDragging(true); },
-        onDrop: () => { setIsDragging(false); },
+        onDragStart: () => {
+          setIsDragging(true);
+        },
+        onDrop: () => {
+          setIsDragging(false);
+        },
       }),
       dropTarget,
     );
@@ -97,15 +111,26 @@ export function TaskCard({ task, lane, display, readOnly }: TaskCardProps) {
   );
 }
 
-function CardMeta({ task, display }: { task: Task; display: CardDisplayOptions }) {
+function CardMeta({
+  task,
+  display,
+}: {
+  task: Task;
+  display: CardDisplayOptions;
+}) {
   const showRepo = display.repo && task.repos.length > 0;
   const showLabels = display.labels && task.labels.length > 0;
-  const showPips = display.pips && (task.value !== undefined || task.effort !== undefined);
+  const showPips =
+    display.pips && (task.value !== undefined || task.effort !== undefined);
   if (!display.id && !showRepo && !showLabels && !showPips) return null;
   return (
     <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
       {display.id && <span className="font-mono">{task.id}</span>}
-      {showRepo && <span className="truncate">{task.repos.map(repoShorthand).join(" ")}</span>}
+      {showRepo && (
+        <span className="truncate">
+          {task.repos.map(repoShorthand).join(" ")}
+        </span>
+      )}
       {showLabels && (
         <span className="flex items-center gap-1">
           {task.labels.map((label) => (
@@ -116,7 +141,9 @@ function CardMeta({ task, display }: { task: Task; display: CardDisplayOptions }
       {showPips && (
         <span className="ml-auto flex items-center gap-1.5">
           {task.value !== undefined && <Pips kind="value" count={task.value} />}
-          {task.effort !== undefined && <Pips kind="effort" count={task.effort} />}
+          {task.effort !== undefined && (
+            <Pips kind="effort" count={task.effort} />
+          )}
         </span>
       )}
     </div>
@@ -151,7 +178,11 @@ function labelHue(label: string): number {
 /** 1..5 estimate as pips — value round, effort square, to tell them apart. */
 function Pips({ kind, count }: { kind: "value" | "effort"; count: number }) {
   return (
-    <span role="img" aria-label={`${kind} ${count} of 5`} className="flex items-center gap-0.5">
+    <span
+      role="img"
+      aria-label={`${kind} ${count} of 5`}
+      className="flex items-center gap-0.5"
+    >
       {[1, 2, 3, 4, 5].map((i) => (
         <span
           key={i}

@@ -5,7 +5,8 @@
  * "core" wraps the Rust side's CoreError (spawn/locate/config failures),
  * "bad-output" means furrow exited 0 but stdout was not the JSON we expect.
  */
-export type FurrowErrorKind = "not-found" | "validation" | "internal" | "core" | "bad-output";
+export type FurrowErrorKind =
+  "not-found" | "validation" | "internal" | "core" | "bad-output";
 
 /** stderr envelope emitted by furrow on non-zero exit. */
 export interface FurrowErrorEnvelope {
@@ -33,7 +34,11 @@ export class FurrowError extends Error {
   constructor(
     kind: FurrowErrorKind,
     message: string,
-    opts: { exitCode?: number; envelope?: FurrowErrorEnvelope; coreCode?: string } = {},
+    opts: {
+      exitCode?: number;
+      envelope?: FurrowErrorEnvelope;
+      coreCode?: string;
+    } = {},
   ) {
     super(message);
     this.name = "FurrowError";

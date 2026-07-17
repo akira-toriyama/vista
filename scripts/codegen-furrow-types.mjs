@@ -18,7 +18,10 @@ import { promisify } from "node:util";
 import { compile } from "json-schema-to-typescript";
 
 const run = promisify(execFile);
-const outDir = join(dirname(fileURLToPath(import.meta.url)), "../src/domain/generated");
+const outDir = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "../src/domain/generated",
+);
 
 const { stdout } = await run("furrow", ["schema", "task"]).catch((e) => {
   console.error(`codegen requires furrow on PATH: ${e.message}`);
@@ -38,6 +41,9 @@ const ts = await compile(schema, "FurrowTaskShard", {
 });
 
 await mkdir(outDir, { recursive: true });
-await writeFile(join(outDir, "furrow.task.schema.json"), JSON.stringify(schema, null, 2) + "\n");
+await writeFile(
+  join(outDir, "furrow.task.schema.json"),
+  JSON.stringify(schema, null, 2) + "\n",
+);
 await writeFile(join(outDir, "furrow-task.ts"), ts);
 console.log(`wrote ${outDir}/{furrow.task.schema.json,furrow-task.ts}`);

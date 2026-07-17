@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { cardDragData, columnDropData, dropTargetFrom, isCardDragData } from "./drag-data";
+import {
+  cardDragData,
+  columnDropData,
+  dropTargetFrom,
+  isCardDragData,
+} from "./drag-data";
 
 const top = () => "top" as const;
 
@@ -14,7 +19,10 @@ describe("isCardDragData", () => {
 describe("dropTargetFrom", () => {
   it("innermost card target wins over the column that contains it", () => {
     const resolved = dropTargetFrom(
-      [{ data: cardDragData("t-2", "ready") }, { data: columnDropData("ready") }],
+      [
+        { data: cardDragData("t-2", "ready") },
+        { data: columnDropData("ready") },
+      ],
       top,
     );
     expect(resolved).toEqual({
@@ -36,7 +44,14 @@ describe("dropTargetFrom", () => {
   });
 
   it("falls back to the bottom edge when edge extraction yields nothing", () => {
-    const resolved = dropTargetFrom([{ data: cardDragData("t-2", "ready") }], () => null);
-    expect(resolved?.target).toEqual({ type: "card", id: "t-2", edge: "bottom" });
+    const resolved = dropTargetFrom(
+      [{ data: cardDragData("t-2", "ready") }],
+      () => null,
+    );
+    expect(resolved?.target).toEqual({
+      type: "card",
+      id: "t-2",
+      edge: "bottom",
+    });
   });
 });

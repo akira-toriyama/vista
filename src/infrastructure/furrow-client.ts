@@ -26,7 +26,9 @@ export type FurrowClient = Omit<FurrowPort, "subscribeTasksChanged">;
 /** Placement as flags (`set`, and relative `reorder`; absolute reorder is positional). */
 function placementFlags(placement: Placement): string[] {
   if ("priority" in placement) return ["-p", String(placement.priority)];
-  return "before" in placement ? ["--before", placement.before] : ["--after", placement.after];
+  return "before" in placement
+    ? ["--before", placement.before]
+    : ["--after", placement.after];
 }
 
 export function createFurrowClient(exec: FurrowExec): FurrowClient {
@@ -36,21 +38,30 @@ export function createFurrowClient(exec: FurrowExec): FurrowClient {
       const kind = kindForExitCode(result.code);
       let envelope: FurrowErrorEnvelope | undefined;
       try {
-        envelope = (JSON.parse(result.stderr) as { error: FurrowErrorEnvelope }).error;
+        envelope = (JSON.parse(result.stderr) as { error: FurrowErrorEnvelope })
+          .error;
       } catch {
         envelope = undefined;
       }
-      throw new FurrowError(kind, envelope?.message ?? `furrow exited ${result.code}: ${result.stderr}`, {
-        exitCode: result.code,
-        envelope,
-      });
+      throw new FurrowError(
+        kind,
+        envelope?.message ?? `furrow exited ${result.code}: ${result.stderr}`,
+        {
+          exitCode: result.code,
+          envelope,
+        },
+      );
     }
     try {
       return JSON.parse(result.stdout) as T;
     } catch {
-      throw new FurrowError("bad-output", `furrow ${args[0]} emitted unparsable JSON: ${result.stdout}`, {
-        exitCode: result.code,
-      });
+      throw new FurrowError(
+        "bad-output",
+        `furrow ${args[0]} emitted unparsable JSON: ${result.stdout}`,
+        {
+          exitCode: result.code,
+        },
+      );
     }
   }
 
@@ -73,7 +84,8 @@ export function createFurrowClient(exec: FurrowExec): FurrowClient {
       if (input.status !== undefined) args.push("-s", input.status);
       if (input.priority !== undefined) args.push("-p", String(input.priority));
       if (input.value !== undefined) args.push("--value", String(input.value));
-      if (input.effort !== undefined) args.push("--effort", String(input.effort));
+      if (input.effort !== undefined)
+        args.push("--effort", String(input.effort));
       for (const label of input.labels ?? []) args.push("-l", label);
       for (const repo of input.repos ?? []) args.push("-r", repo);
       for (const dep of input.deps ?? []) args.push("--dep", dep);
@@ -89,13 +101,18 @@ export function createFurrowClient(exec: FurrowExec): FurrowClient {
     setTask: (id, patch: SetTaskPatch) => {
       const args = ["set", id, "--json"];
       if (patch.status !== undefined) args.push("-s", patch.status);
-      if (patch.placement !== undefined) args.push(...placementFlags(patch.placement));
+      if (patch.placement !== undefined)
+        args.push(...placementFlags(patch.placement));
       if (patch.value === null) args.push("--clear-value");
-      else if (patch.value !== undefined) args.push("--value", String(patch.value));
+      else if (patch.value !== undefined)
+        args.push("--value", String(patch.value));
       if (patch.effort === null) args.push("--clear-effort");
-      else if (patch.effort !== undefined) args.push("--effort", String(patch.effort));
-      for (const label of patch.addLabels ?? []) args.push("--add-label", label);
-      for (const label of patch.removeLabels ?? []) args.push("--rm-label", label);
+      else if (patch.effort !== undefined)
+        args.push("--effort", String(patch.effort));
+      for (const label of patch.addLabels ?? [])
+        args.push("--add-label", label);
+      for (const label of patch.removeLabels ?? [])
+        args.push("--rm-label", label);
       if (patch.type !== undefined) args.push("--type", patch.type);
       return run(args);
     },

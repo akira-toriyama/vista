@@ -12,7 +12,10 @@ import { promisify } from "node:util";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { FurrowError } from "@/application/furrow-error";
 import type { ExecResult, FurrowExec } from "@/infrastructure/exec";
-import { createFurrowClient, type FurrowClient } from "@/infrastructure/furrow-client";
+import {
+  createFurrowClient,
+  type FurrowClient,
+} from "@/infrastructure/furrow-client";
 
 const run = promisify(execFile);
 
@@ -38,12 +41,16 @@ function makeExec(cwd: string): FurrowExec {
     });
 }
 
-async function vendoredSchema(): Promise<{ required: string[] } & Record<string, unknown>> {
-  const path = new URL("../../src/domain/generated/furrow.task.schema.json", import.meta.url);
-  return JSON.parse(await readFile(path, "utf8")) as { required: string[] } & Record<
-    string,
-    unknown
-  >;
+async function vendoredSchema(): Promise<
+  { required: string[] } & Record<string, unknown>
+> {
+  const path = new URL(
+    "../../src/domain/generated/furrow.task.schema.json",
+    import.meta.url,
+  );
+  return JSON.parse(await readFile(path, "utf8")) as {
+    required: string[];
+  } & Record<string, unknown>;
 }
 
 describe.skipIf(!furrowAvailable)("furrow contract", () => {
@@ -117,8 +124,13 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
 
   it("listTasks lane filter narrows to that lane only", async () => {
     const board = await client.board();
-    const lane = board.lanes.find((l) => l !== board.default_lane && l !== board.done_lane)!;
-    const added = await client.addTask({ title: "contract: filtered", status: lane });
+    const lane = board.lanes.find(
+      (l) => l !== board.default_lane && l !== board.done_lane,
+    )!;
+    const added = await client.addTask({
+      title: "contract: filtered",
+      status: lane,
+    });
     const filtered = await client.listTasks({ lanes: [lane] });
     expect(filtered.some((t) => t.id === added.id)).toBe(true);
     expect(filtered.every((t) => t.status === lane)).toBe(true);
@@ -130,13 +142,19 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
     expect(tasks.length).toBeGreaterThan(0);
     for (const task of tasks) {
       for (const key of required) {
-        expect(task, `${task.id} is missing required field ${key}`).toHaveProperty(key);
+        expect(
+          task,
+          `${task.id} is missing required field ${key}`,
+        ).toHaveProperty(key);
       }
     }
   });
 
   it("showTask resolves the body markdown", async () => {
-    const added = await client.addTask({ title: "contract: show", body: "# hello body" });
+    const added = await client.addTask({
+      title: "contract: show",
+      body: "# hello body",
+    });
     const detail = await client.showTask(added.id);
     expect(detail.id).toBe(added.id);
     expect(detail.body_text).toContain("hello body");
@@ -145,7 +163,9 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
   it("moveTask / doneTask report before/after and stamp closed", async () => {
     const board = await client.board();
     const added = await client.addTask({ title: "contract: move" });
-    const lane = board.lanes.find((l) => l !== board.default_lane && l !== board.done_lane)!;
+    const lane = board.lanes.find(
+      (l) => l !== board.default_lane && l !== board.done_lane,
+    )!;
     const moved = await client.moveTask(added.id, lane);
     expect(moved.before.status).toBe(board.default_lane);
     expect(moved.after.status).toBe(lane);
@@ -159,7 +179,10 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
   it("setTask applies lane+estimates+labels in one write, null clears", async () => {
     const board = await client.board();
     const lane = board.lanes.find((l) => l !== board.default_lane)!;
-    const added = await client.addTask({ title: "contract: set", labels: ["wip"] });
+    const added = await client.addTask({
+      title: "contract: set",
+      labels: ["wip"],
+    });
     const set = await client.setTask(added.id, {
       status: lane,
       value: 5,
@@ -174,9 +197,18 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
   });
 
   it("reorderTask --before/--after slots the task between its lane siblings", async () => {
-    const top = await client.addTask({ title: "contract: reorder top", priority: 100 });
-    const bottom = await client.addTask({ title: "contract: reorder bottom", priority: 200 });
-    const moved = await client.addTask({ title: "contract: reorder me", priority: 300 });
+    const top = await client.addTask({
+      title: "contract: reorder top",
+      priority: 100,
+    });
+    const bottom = await client.addTask({
+      title: "contract: reorder bottom",
+      priority: 200,
+    });
+    const moved = await client.addTask({
+      title: "contract: reorder me",
+      priority: 300,
+    });
 
     const before = await client.reorderTask(moved.id, { before: bottom.id });
     expect(before.changed).toContain("priority");
@@ -188,9 +220,15 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
   });
 
   it("reorderTask respaces an exhausted gap atomically and reports renumbered", async () => {
-    const first = await client.addTask({ title: "contract: gap a", priority: 1000 });
+    const first = await client.addTask({
+      title: "contract: gap a",
+      priority: 1000,
+    });
     await client.addTask({ title: "contract: gap b", priority: 1001 });
-    const squeezed = await client.addTask({ title: "contract: gap squeeze", priority: 2000 });
+    const squeezed = await client.addTask({
+      title: "contract: gap squeeze",
+      priority: 2000,
+    });
     const report = await client.reorderTask(squeezed.id, { after: first.id });
     expect(report.renumbered).toBeDefined();
     expect(report.renumbered!.length).toBeGreaterThan(0);
@@ -203,8 +241,13 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
 
   it("setTask lands lane + relative position in one write (cross-lane drop)", async () => {
     const board = await client.board();
-    const lane = board.lanes.find((l) => l !== board.default_lane && l !== board.done_lane)!;
-    const anchor = await client.addTask({ title: "contract: drop anchor", status: lane });
+    const lane = board.lanes.find(
+      (l) => l !== board.default_lane && l !== board.done_lane,
+    )!;
+    const anchor = await client.addTask({
+      title: "contract: drop anchor",
+      status: lane,
+    });
     const dropped = await client.addTask({ title: "contract: dropped card" });
     const report = await client.setTask(dropped.id, {
       status: lane,
@@ -212,14 +255,21 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
     });
     expect(report.after.status).toBe(lane);
     expect(report.after.priority).toBeLessThan(anchor.priority);
-    expect(report.changed).toEqual(expect.arrayContaining(["status", "priority"]));
+    expect(report.changed).toEqual(
+      expect.arrayContaining(["status", "priority"]),
+    );
   });
 
   it("reorderTask across lanes is refused as validation", async () => {
     const board = await client.board();
-    const lane = board.lanes.find((l) => l !== board.default_lane && l !== board.done_lane)!;
+    const lane = board.lanes.find(
+      (l) => l !== board.default_lane && l !== board.done_lane,
+    )!;
     const here = await client.addTask({ title: "contract: reorder here" });
-    const there = await client.addTask({ title: "contract: reorder there", status: lane });
+    const there = await client.addTask({
+      title: "contract: reorder there",
+      status: lane,
+    });
     const err = await client.reorderTask(here.id, { before: there.id }).then(
       () => {
         throw new Error("expected rejection");
@@ -239,7 +289,10 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
   });
 
   it("setChecklistItem toggles one item by index", async () => {
-    const added = await client.addTask({ title: "contract: check", checklist: ["a", "b"] });
+    const added = await client.addTask({
+      title: "contract: check",
+      checklist: ["a", "b"],
+    });
     const checked = await client.setChecklistItem(added.id, 1, true);
     expect(checked.after.checklist).toEqual([
       { text: "a", done: false },
@@ -251,7 +304,9 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
 
   it("addDeps / listDeps / removeDeps round-trip both directions", async () => {
     const dep = await client.addTask({ title: "contract: the dep" });
-    const dependent = await client.addTask({ title: "contract: the dependent" });
+    const dependent = await client.addTask({
+      title: "contract: the dependent",
+    });
     const updated = await client.addDeps(dependent.id, [dep.id]);
     expect(updated.after.deps).toContain(dep.id);
 
@@ -266,7 +321,10 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
 
   it("a dep on an open task marks the dependent blocked in listTasks", async () => {
     const dep = await client.addTask({ title: "contract: blocker" });
-    const dependent = await client.addTask({ title: "contract: blocked", deps: [dep.id] });
+    const dependent = await client.addTask({
+      title: "contract: blocked",
+      deps: [dep.id],
+    });
     const tasks = await client.listTasks();
     const row = tasks.find((t) => t.id === dependent.id);
     expect(row?.blocked_by).toContain(dep.id);
