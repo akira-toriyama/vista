@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import type { Task } from "@/domain/task";
 import type { FurrowPort } from "./furrow-port";
@@ -93,7 +93,9 @@ function wrapper(port: FurrowPort) {
   const queryClient = createQueryClient();
   return ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <FurrowPortProvider port={port}>{children}</FurrowPortProvider>
+      <FurrowPortProvider port={port}>
+        <Suspense fallback={null}>{children}</Suspense>
+      </FurrowPortProvider>
     </QueryClientProvider>
   );
 }
@@ -107,7 +109,7 @@ describe("query hooks", () => {
     await waitFor(() => {
       expect(result.current.data).toBeDefined();
     });
-    expect(result.current.data!.map((t) => t.id)).toEqual(["t-a"]);
+    expect(result.current.data.map((t) => t.id)).toEqual(["t-a"]);
   });
 
   it("useTaskDetail loads one task with body_text", async () => {
@@ -126,7 +128,7 @@ describe("query hooks", () => {
       wrapper: wrapper(port),
     });
     await waitFor(() => {
-      expect(result.current.data?.writable).toBe(true);
+      expect(result.current.data.writable).toBe(true);
     });
   });
 });
@@ -139,14 +141,14 @@ describe("mutations", () => {
     await waitFor(() => {
       expect(list.result.current.data).toBeDefined();
     });
-    expect(list.result.current.data?.[0]?.status).toBe("inbox");
+    expect(list.result.current.data[0]?.status).toBe("inbox");
 
     const move = renderHook(() => useMoveTask(), { wrapper: w });
     await act(() =>
       move.result.current.mutateAsync({ id: "t-a", lane: "done" }),
     );
     await waitFor(() => {
-      expect(list.result.current.data?.[0]?.status).toBe("done");
+      expect(list.result.current.data[0]?.status).toBe("done");
     });
   });
 });
@@ -242,8 +244,8 @@ describe("useDropTask", () => {
       });
     });
     await waitFor(() => {
-      const inbox = list.result.current
-        .data!.filter((t) => t.status === "inbox")
+      const inbox = list.result.current.data
+        .filter((t) => t.status === "inbox")
         .sort((a, b) => a.priority - b.priority);
       expect(inbox.map((t) => t.id)).toEqual(["t-2", "t-3", "t-1"]);
     });
@@ -257,7 +259,7 @@ describe("useDropTask", () => {
     await waitFor(() => {
       expect(list.result.current.data).toBeDefined();
     });
-    const originalOrder = list.result.current.data!.map((t) => t.id);
+    const originalOrder = list.result.current.data.map((t) => t.id);
 
     const drop = renderHook(() => useDropTask(), { wrapper: w });
     act(() => {
@@ -271,7 +273,7 @@ describe("useDropTask", () => {
       expect(drop.result.current.isError).toBe(true);
     });
     await waitFor(() => {
-      expect(list.result.current.data!.map((t) => t.id)).toEqual(originalOrder);
+      expect(list.result.current.data.map((t) => t.id)).toEqual(originalOrder);
     });
   });
 });

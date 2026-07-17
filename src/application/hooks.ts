@@ -2,6 +2,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  useSuspenseQuery,
   type UseMutationResult,
 } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -11,14 +12,21 @@ import type { TaskFilter } from "./furrow-port";
 import { useFurrowPort } from "./furrow-port-context";
 import { boardKeys, taskKeys } from "./query-keys";
 
+/**
+ * Suspense queries: loading is the nearest <Suspense>, failure the nearest
+ * ErrorBoundary (ViewBoundary), so views read `data` as non-nullable.
+ */
 export function useBoardInfo() {
   const port = useFurrowPort();
-  return useQuery({ queryKey: boardKeys.info, queryFn: () => port.board() });
+  return useSuspenseQuery({
+    queryKey: boardKeys.info,
+    queryFn: () => port.board(),
+  });
 }
 
 export function useTaskList(filter?: TaskFilter) {
   const port = useFurrowPort();
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: taskKeys.list(filter),
     queryFn: () => port.listTasks(filter),
   });
