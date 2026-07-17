@@ -84,7 +84,14 @@ export default tseslint.config(
   {
     files: ["src/**/*.test.{ts,tsx}", "tests/**/*.test.ts"],
     plugins: { vitest },
-    rules: vitest.configs.recommended.rules,
+    rules: {
+      ...vitest.configs.recommended.rules,
+      // @fast-check/vitest's test.prop is a test block too
+      "vitest/no-standalone-expect": [
+        "error",
+        { additionalTestBlockFunctions: ["test.prop", "it.prop"] },
+      ],
+    },
   },
   {
     files: ["src/**/*.test.tsx"],
