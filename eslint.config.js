@@ -22,7 +22,10 @@ export default tseslint.config(
   {
     rules: {
       // numbers stringify deterministically; forbidding them buys no safety
-      "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
+      "@typescript-eslint/restrict-template-expressions": [
+        "error",
+        { allowNumber: true },
+      ],
     },
   },
   // config files and node-run scripts stay outside typed lint
@@ -102,20 +105,39 @@ export default tseslint.config(
           policies: [
             // external npm modules are allowed by default…
             { allow: { to: { module: { source: "**" } } } },
-            { from: { element: { types: "domain" } }, allow: { to: { element: { types: "domain" } } } },
+            {
+              from: { element: { types: "domain" } },
+              allow: { to: { element: { types: "domain" } } },
+            },
             {
               from: { element: { types: "application" } },
-              allow: { to: { element: { types: { anyOf: ["application", "domain"] } } } },
+              allow: {
+                to: {
+                  element: { types: { anyOf: ["application", "domain"] } },
+                },
+              },
             },
             {
               from: { element: { types: "infrastructure" } },
               allow: {
-                to: { element: { types: { anyOf: ["infrastructure", "application", "domain"] } } },
+                to: {
+                  element: {
+                    types: {
+                      anyOf: ["infrastructure", "application", "domain"],
+                    },
+                  },
+                },
               },
             },
             {
               from: { element: { types: "ui" } },
-              allow: { to: { element: { types: { anyOf: ["ui", "application", "domain"] } } } },
+              allow: {
+                to: {
+                  element: {
+                    types: { anyOf: ["ui", "application", "domain"] },
+                  },
+                },
+              },
             },
             // composition root wires everything together
             {
@@ -123,14 +145,24 @@ export default tseslint.config(
               allow: {
                 to: {
                   element: {
-                    types: { anyOf: ["app", "ui", "application", "infrastructure", "domain"] },
+                    types: {
+                      anyOf: [
+                        "app",
+                        "ui",
+                        "application",
+                        "infrastructure",
+                        "domain",
+                      ],
+                    },
                   },
                 },
               },
             },
             // …except: only infrastructure may talk to Tauri
             {
-              from: { element: { types: { anyOf: ["domain", "application", "ui"] } } },
+              from: {
+                element: { types: { anyOf: ["domain", "application", "ui"] } },
+              },
               disallow: { to: { module: { source: "@tauri-apps/*" } } },
               message: "@tauri-apps/* is only allowed in infrastructure/",
             },

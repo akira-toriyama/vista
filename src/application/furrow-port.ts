@@ -76,7 +76,11 @@ export interface FurrowPort {
   reorderTask(id: string, placement: Placement): Promise<MutationReport>;
   doneTask(id: string): Promise<MutationReport>;
   retitleTask(id: string, title: string): Promise<MutationReport>;
-  setChecklistItem(id: string, index: number, done: boolean): Promise<MutationReport>;
+  setChecklistItem(
+    id: string,
+    index: number,
+    done: boolean,
+  ): Promise<MutationReport>;
   addDeps(id: string, deps: string[]): Promise<MutationReport>;
   removeDeps(id: string, deps: string[]): Promise<MutationReport>;
   listDeps(id: string): Promise<DepNeighborhood>;

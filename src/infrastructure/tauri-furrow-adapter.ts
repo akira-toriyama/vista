@@ -10,7 +10,9 @@ export const TASKS_CHANGED_EVENT = "tasks://changed";
 
 function toCoreError(e: unknown): FurrowError {
   const core = e as Partial<CoreErrorShape>;
-  return new FurrowError("core", core.message ?? String(e), { coreCode: core.code });
+  return new FurrowError("core", core.message ?? String(e), {
+    coreCode: core.code,
+  });
 }
 
 /**
@@ -44,7 +46,9 @@ export function createTauriFurrowAdapter(): FurrowPort {
       }
       let cancelled = false;
       let unlisten: UnlistenFn | undefined;
-      listen(TASKS_CHANGED_EVENT, () => { onChange(); })
+      listen(TASKS_CHANGED_EVENT, () => {
+        onChange();
+      })
         .then((fn) => {
           if (cancelled) fn();
           else unlisten = fn;

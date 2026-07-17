@@ -55,7 +55,11 @@ export function dropTargetFrom(
       const edge = extractEdge(data);
       return {
         lane: data.lane,
-        target: { type: "card", id: data.id, edge: edge === "top" ? "top" : "bottom" },
+        target: {
+          type: "card",
+          id: data.id,
+          edge: edge === "top" ? "top" : "bottom",
+        },
       };
     }
     if (isColumnDropData(data)) {

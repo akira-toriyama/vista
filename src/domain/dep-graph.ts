@@ -28,7 +28,9 @@ export interface DepGraph<T extends DepGraphTask> {
   dangling: DanglingDep[];
 }
 
-export function buildDepGraph<T extends DepGraphTask>(tasks: readonly T[]): DepGraph<T> {
+export function buildDepGraph<T extends DepGraphTask>(
+  tasks: readonly T[],
+): DepGraph<T> {
   const ids = new Set(tasks.map((t) => t.id));
   const edges: DepEdge[] = [];
   const dangling: DanglingDep[] = [];

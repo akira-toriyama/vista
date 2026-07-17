@@ -17,7 +17,8 @@ export interface KanbanCard {
 export type RelativePlacement = { before: string } | { after: string };
 
 /** Where a drag ended: on a card (with the nearest edge) or on the column body. */
-export type DropTarget = { type: "card"; id: string; edge: "top" | "bottom" } | { type: "column" };
+export type DropTarget =
+  { type: "card"; id: string; edge: "top" | "bottom" } | { type: "column" };
 
 /**
  * The one write a drop maps to: same-lane → `reorder`, cross-lane → `move`
@@ -33,7 +34,10 @@ export type DropPlan =
  * column sorted by sparse priority ascending (lower = higher up), ties broken
  * by id. Tasks in a lane the board does not know are dropped.
  */
-export function columnize<T extends KanbanCard>(tasks: T[], lanes: Lane[]): Map<Lane, T[]> {
+export function columnize<T extends KanbanCard>(
+  tasks: T[],
+  lanes: Lane[],
+): Map<Lane, T[]> {
   const columns = new Map<Lane, T[]>(lanes.map((lane) => [lane, []]));
   for (const task of tasks) columns.get(task.status)?.push(task);
   for (const column of columns.values()) {
@@ -52,14 +56,17 @@ export interface DropArgs<T extends KanbanCard> {
 }
 
 /** Turn a drop gesture into its furrow write, or null when nothing would change. */
-export function planDrop<T extends KanbanCard>(args: DropArgs<T>): DropPlan | null {
+export function planDrop<T extends KanbanCard>(
+  args: DropArgs<T>,
+): DropPlan | null {
   const { draggedId, sourceLane, targetLane, targetCards, target } = args;
   const sameLane = sourceLane === targetLane;
 
   let placement: RelativePlacement | undefined;
   if (target.type === "card") {
     if (target.id === draggedId) return null;
-    placement = target.edge === "top" ? { before: target.id } : { after: target.id };
+    placement =
+      target.edge === "top" ? { before: target.id } : { after: target.id };
   } else {
     const last = targetCards[targetCards.length - 1];
     if (last === undefined) return sameLane ? null : { kind: "move" };
@@ -95,9 +102,11 @@ export function optimisticPriority(
   const anchorId = "before" in placement ? placement.before : placement.after;
   const anchorIndex = others.findIndex((c) => c.id === anchorId);
   const anchor = others[anchorIndex];
-  if (anchor === undefined) return Math.max(...others.map((c) => c.priority)) + 1;
+  if (anchor === undefined)
+    return Math.max(...others.map((c) => c.priority)) + 1;
 
-  const neighbor = "before" in placement ? others[anchorIndex - 1] : others[anchorIndex + 1];
+  const neighbor =
+    "before" in placement ? others[anchorIndex - 1] : others[anchorIndex + 1];
   if (neighbor === undefined) {
     return "before" in placement ? anchor.priority - 1 : anchor.priority + 1;
   }

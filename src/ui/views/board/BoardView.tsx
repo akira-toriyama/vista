@@ -7,7 +7,10 @@ import { BoardColumn } from "./BoardColumn";
 import { dropTargetFrom, isCardDragData } from "./drag-data";
 import type { CardDisplayOptions } from "./TaskCard";
 
-const DISPLAY_FIELDS: readonly { key: keyof CardDisplayOptions; label: string }[] = [
+const DISPLAY_FIELDS: readonly {
+  key: keyof CardDisplayOptions;
+  label: string;
+}[] = [
   { key: "id", label: "ID" },
   { key: "pips", label: "Pips" },
   { key: "labels", label: "Labels" },
@@ -52,7 +55,8 @@ export function BoardView() {
           targetCards: columns.get(resolved.lane) ?? [],
           target: resolved.target,
         });
-        if (plan !== null) executeDrop({ id: source.data.id, targetLane: resolved.lane, plan });
+        if (plan !== null)
+          executeDrop({ id: source.data.id, targetLane: resolved.lane, plan });
       },
     });
   }, [columns, executeDrop]);
@@ -67,7 +71,9 @@ export function BoardView() {
             size="xs"
             aria-pressed={display[key]}
             className={display[key] ? "" : "text-muted-foreground/50"}
-            onClick={() => { setDisplay((d) => ({ ...d, [key]: !d[key] })); }}
+            onClick={() => {
+              setDisplay((d) => ({ ...d, [key]: !d[key] }));
+            }}
           >
             {label}
           </Button>

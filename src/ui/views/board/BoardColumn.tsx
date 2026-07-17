@@ -13,7 +13,12 @@ interface BoardColumnProps {
 }
 
 /** One lane as a column: header with count, body = drop target for cards. */
-export function BoardColumn({ lane, cards, display, readOnly }: BoardColumnProps) {
+export function BoardColumn({
+  lane,
+  cards,
+  display,
+  readOnly,
+}: BoardColumnProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [isCardOver, setIsCardOver] = useState(false);
 
@@ -24,9 +29,15 @@ export function BoardColumn({ lane, cards, display, readOnly }: BoardColumnProps
       element,
       getData: () => columnDropData(lane),
       canDrop: ({ source }) => isCardDragData(source.data),
-      onDragEnter: () => { setIsCardOver(true); },
-      onDragLeave: () => { setIsCardOver(false); },
-      onDrop: () => { setIsCardOver(false); },
+      onDragEnter: () => {
+        setIsCardOver(true);
+      },
+      onDragLeave: () => {
+        setIsCardOver(false);
+      },
+      onDrop: () => {
+        setIsCardOver(false);
+      },
     });
   }, [lane]);
 
@@ -37,7 +48,9 @@ export function BoardColumn({ lane, cards, display, readOnly }: BoardColumnProps
     >
       <h2 className="flex items-baseline gap-1.5 px-3 pt-2.5 pb-1 text-sm font-semibold">
         {lane}
-        <span className="text-xs font-normal text-muted-foreground">{cards.length}</span>
+        <span className="text-xs font-normal text-muted-foreground">
+          {cards.length}
+        </span>
       </h2>
       <div
         ref={bodyRef}
@@ -47,7 +60,13 @@ export function BoardColumn({ lane, cards, display, readOnly }: BoardColumnProps
         )}
       >
         {cards.map((task) => (
-          <TaskCard key={task.id} task={task} lane={lane} display={display} readOnly={readOnly} />
+          <TaskCard
+            key={task.id}
+            task={task}
+            lane={lane}
+            display={display}
+            readOnly={readOnly}
+          />
         ))}
       </div>
     </section>

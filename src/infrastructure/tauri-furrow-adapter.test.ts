@@ -26,7 +26,9 @@ describe("createTauriFurrowAdapter", () => {
       throw new Error(`unexpected command: ${cmd}`);
     });
 
-    const tasks = await createTauriFurrowAdapter().listTasks({ lanes: ["ready"] });
+    const tasks = await createTauriFurrowAdapter().listTasks({
+      lanes: ["ready"],
+    });
     expect(seen).toEqual([["ls", "--json", "-s", "ready"]]);
     expect(tasks.map((t) => t.id)).toEqual(["t-a"]);
   });
@@ -64,7 +66,9 @@ describe("createTauriFurrowAdapter", () => {
     });
 
     const changes: number[] = [];
-    const unsubscribe = createTauriFurrowAdapter().subscribeTasksChanged(() => changes.push(1));
+    const unsubscribe = createTauriFurrowAdapter().subscribeTasksChanged(() =>
+      changes.push(1),
+    );
 
     await Promise.resolve(); // let the async listen registration settle
     expect(invoked).toContain("watch_start");
@@ -72,10 +76,15 @@ describe("createTauriFurrowAdapter", () => {
     expect(handlerId).toBeDefined();
 
     // fire the captured Tauri event callback (mockIPC exposes runCallback)
-    const internals = (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ as {
+    const internals = (window as unknown as Record<string, unknown>)
+      .__TAURI_INTERNALS__ as {
       runCallback: (id: number, data: unknown) => void;
     };
-    internals.runCallback(handlerId!, { event: "tasks://changed", id: 1, payload: null });
+    internals.runCallback(handlerId!, {
+      event: "tasks://changed",
+      id: 1,
+      payload: null,
+    });
     expect(changes).toHaveLength(1);
 
     unsubscribe();
