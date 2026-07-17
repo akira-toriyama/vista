@@ -6,9 +6,9 @@ name: taplo
 
 on:
   pull_request:
-    paths: ["**/*.toml"]
+    paths: ['**/*.toml']
   push:
-    paths: ["**/*.toml"]
+    paths: ['**/*.toml']
   workflow_dispatch:
 
 permissions:
