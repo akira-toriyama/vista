@@ -2,7 +2,13 @@
 # hash-pinned per the fleet pinning policy (.github/zizmor.yml); actions/* ride tags.
 name: ci
 
+# main is gated too, not just PRs: fleet-sync pushes to it directly, so a
+# PR-only trigger let a breakage land unchecked and ambush the next PR author
+# instead of the commit that caused it (t-2qyb). PR branches keep firing on
+# pull_request alone — `branches: [main]` means a push event never doubles up.
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
