@@ -1,8 +1,12 @@
 import js from "@eslint/js";
+import vitest from "@vitest/eslint-plugin";
 import prettier from "eslint-config-prettier/flat";
 import boundaries from "eslint-plugin-boundaries";
+import jsxA11yX from "eslint-plugin-jsx-a11y-x";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import testingLibrary from "eslint-plugin-testing-library";
+import useEncapsulation from "eslint-plugin-use-encapsulation";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
@@ -54,6 +58,42 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": "warn",
+    },
+  },
+  // a11y is a feature of this kanban UI, not a nice-to-have — strict pack
+  {
+    files: ["src/**/*.tsx"],
+    plugins: { "jsx-a11y-x": jsxA11yX },
+    rules: jsxA11yX.configs.strict.rules,
+  },
+  // components touch hooks only through named useXxx hooks — pairs with the
+  // presenter/hook injection pattern (t-rz61)
+  {
+    files: ["src/**/*.tsx"],
+    ignores: [
+      "src/**/*.test.tsx",
+      // pre-pattern views; they migrate to presenter/hook in t-rz61
+      "src/ui/views/board/BoardView.tsx",
+      "src/ui/views/board/BoardColumn.tsx",
+      "src/ui/views/board/TaskCard.tsx",
+    ],
+    plugins: { "use-encapsulation": useEncapsulation },
+    rules: { "use-encapsulation/prefer-custom-hooks": "error" },
+  },
+  // test hygiene: no stray .skip / expect-less tests; RTL role-first queries
+  {
+    files: ["src/**/*.test.{ts,tsx}", "tests/**/*.test.ts"],
+    plugins: { vitest },
+    rules: vitest.configs.recommended.rules,
+  },
+  {
+    files: ["src/**/*.test.tsx"],
+    ...testingLibrary.configs["flat/react"],
+    rules: {
+      ...testingLibrary.configs["flat/react"].rules,
+      // misfires on renderHook results (list/move/hook…), where the blessed
+      // names (view/utils) would be the wrong ones
+      "testing-library/render-result-naming-convention": "off",
     },
   },
   // vendored shadcn/ui components export variants alongside components
