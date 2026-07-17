@@ -11,7 +11,10 @@ import "@/ui/index.css";
 const port = createTauriFurrowAdapter();
 const queryClient = createQueryClient();
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+const rootElement = document.getElementById("root");
+if (rootElement === null) throw new Error("index.html is missing #root");
+
+ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <FurrowPortProvider port={port}>

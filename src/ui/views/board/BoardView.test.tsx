@@ -64,7 +64,7 @@ function stubPort(overrides: { writable?: boolean } = {}): FurrowPort {
     removeDeps: never,
     listDeps: never,
     subscribeTasksChanged: () => () => {},
-  } as unknown as FurrowPort;
+  };
 }
 
 function renderBoard(port: FurrowPort = stubPort()) {

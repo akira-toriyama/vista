@@ -94,9 +94,9 @@ export function optimisticPriority(
 
   const anchorId = "before" in placement ? placement.before : placement.after;
   const anchorIndex = others.findIndex((c) => c.id === anchorId);
-  if (anchorIndex === -1) return Math.max(...others.map((c) => c.priority)) + 1;
+  const anchor = others[anchorIndex];
+  if (anchor === undefined) return Math.max(...others.map((c) => c.priority)) + 1;
 
-  const anchor = others[anchorIndex]!;
   const neighbor = "before" in placement ? others[anchorIndex - 1] : others[anchorIndex + 1];
   if (neighbor === undefined) {
     return "before" in placement ? anchor.priority - 1 : anchor.priority + 1;

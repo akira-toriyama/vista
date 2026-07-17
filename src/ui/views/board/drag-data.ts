@@ -47,7 +47,7 @@ function isColumnDropData(data: DragData): data is ColumnDropData {
  * end-of-column drop; anything else means the drag ended nowhere useful.
  */
 export function dropTargetFrom(
-  targets: ReadonlyArray<{ data: DragData }>,
+  targets: readonly { data: DragData }[],
   extractEdge: (data: DragData) => Edge | null = extractClosestEdge,
 ): { lane: Lane; target: DropTarget } | null {
   for (const { data } of targets) {

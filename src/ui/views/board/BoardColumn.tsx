@@ -24,9 +24,9 @@ export function BoardColumn({ lane, cards, display, readOnly }: BoardColumnProps
       element,
       getData: () => columnDropData(lane),
       canDrop: ({ source }) => isCardDragData(source.data),
-      onDragEnter: () => setIsCardOver(true),
-      onDragLeave: () => setIsCardOver(false),
-      onDrop: () => setIsCardOver(false),
+      onDragEnter: () => { setIsCardOver(true); },
+      onDragLeave: () => { setIsCardOver(false); },
+      onDrop: () => { setIsCardOver(false); },
     });
   }, [lane]);
 

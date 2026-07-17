@@ -8,7 +8,36 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   { ignores: ["dist/", "src-tauri/target/"] },
   js.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    rules: {
+      // numbers stringify deterministically; forbidding them buys no safety
+      "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
+    },
+  },
+  // config files and node-run scripts stay outside typed lint
+  {
+    files: ["**/*.config.{js,ts,mjs}", "eslint.config.js", "scripts/**/*.mjs"],
+    extends: [tseslint.configs.disableTypeChecked],
+  },
+  // tests: `!` after a find() is idiomatic — a wrong one fails the assertion
+  // anyway; noop callbacks are legitimate stand-ins
+  {
+    files: ["src/**/*.test.{ts,tsx}", "tests/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-empty-function": "off",
+    },
+  },
   {
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: {

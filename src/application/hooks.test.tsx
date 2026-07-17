@@ -76,7 +76,7 @@ function fakePort() {
   };
   return {
     port,
-    fireChanged: () => listeners.forEach((l) => l()),
+    fireChanged: () => { listeners.forEach((l) => { l(); }); },
     listenerCount: () => listeners.size,
     unsubscribedCount: () => unsubscribed,
   };
@@ -95,20 +95,20 @@ describe("query hooks", () => {
   it("useTaskList loads tasks through the port", async () => {
     const { port } = fakePort();
     const { result } = renderHook(() => useTaskList(), { wrapper: wrapper(port) });
-    await waitFor(() => expect(result.current.data).toBeDefined());
+    await waitFor(() => { expect(result.current.data).toBeDefined(); });
     expect(result.current.data!.map((t) => t.id)).toEqual(["t-a"]);
   });
 
   it("useTaskDetail loads one task with body_text", async () => {
     const { port } = fakePort();
     const { result } = renderHook(() => useTaskDetail("t-a"), { wrapper: wrapper(port) });
-    await waitFor(() => expect(result.current.data?.body_text).toBe("# t-a"));
+    await waitFor(() => { expect(result.current.data?.body_text).toBe("# t-a"); });
   });
 
   it("useBoardInfo loads the board vocabulary", async () => {
     const { port } = fakePort();
     const { result } = renderHook(() => useBoardInfo(), { wrapper: wrapper(port) });
-    await waitFor(() => expect(result.current.data?.writable).toBe(true));
+    await waitFor(() => { expect(result.current.data?.writable).toBe(true); });
   });
 });
 
@@ -117,12 +117,12 @@ describe("mutations", () => {
     const { port } = fakePort();
     const w = wrapper(port);
     const list = renderHook(() => useTaskList(), { wrapper: w });
-    await waitFor(() => expect(list.result.current.data).toBeDefined());
+    await waitFor(() => { expect(list.result.current.data).toBeDefined(); });
     expect(list.result.current.data?.[0]?.status).toBe("inbox");
 
     const move = renderHook(() => useMoveTask(), { wrapper: w });
     await act(() => move.result.current.mutateAsync({ id: "t-a", lane: "done" }));
-    await waitFor(() => expect(list.result.current.data?.[0]?.status).toBe("done"));
+    await waitFor(() => { expect(list.result.current.data?.[0]?.status).toBe("done"); });
   });
 });
 
@@ -202,7 +202,7 @@ describe("useDropTask", () => {
     port.reorderTask = () => new Promise<never>(() => {});
     const w = wrapper(port);
     const list = renderHook(() => useTaskList(), { wrapper: w });
-    await waitFor(() => expect(list.result.current.data).toBeDefined());
+    await waitFor(() => { expect(list.result.current.data).toBeDefined(); });
 
     const drop = renderHook(() => useDropTask(), { wrapper: w });
     act(() => {
@@ -225,7 +225,7 @@ describe("useDropTask", () => {
     port.reorderTask = () => Promise.reject(new Error("boom"));
     const w = wrapper(port);
     const list = renderHook(() => useTaskList(), { wrapper: w });
-    await waitFor(() => expect(list.result.current.data).toBeDefined());
+    await waitFor(() => { expect(list.result.current.data).toBeDefined(); });
     const originalOrder = list.result.current.data!.map((t) => t.id);
 
     const drop = renderHook(() => useDropTask(), { wrapper: w });
@@ -236,8 +236,8 @@ describe("useDropTask", () => {
         plan: { kind: "reorder", placement: { after: "t-3" } },
       });
     });
-    await waitFor(() => expect(drop.result.current.isError).toBe(true));
-    await waitFor(() => expect(list.result.current.data!.map((t) => t.id)).toEqual(originalOrder));
+    await waitFor(() => { expect(drop.result.current.isError).toBe(true); });
+    await waitFor(() => { expect(list.result.current.data!.map((t) => t.id)).toEqual(originalOrder); });
   });
 });
 
@@ -245,20 +245,20 @@ describe("useTasksChangedInvalidation", () => {
   it("refetches queries when the port reports a .furrow change", async () => {
     const fake = fakePort();
     const w = wrapper(fake.port);
-    renderHook(() => useTasksChangedInvalidation(), { wrapper: w });
+    renderHook(() => { useTasksChangedInvalidation(); }, { wrapper: w });
     const list = renderHook(() => useTaskList(), { wrapper: w });
-    await waitFor(() => expect(list.result.current.data).toBeDefined());
+    await waitFor(() => { expect(list.result.current.data).toBeDefined(); });
     expect(list.result.current.data).toHaveLength(1);
 
     // Claude Code edits the board from the CLI → watcher fires
     await fake.port.addTask({ title: "outside edit" });
-    act(() => fake.fireChanged());
-    await waitFor(() => expect(list.result.current.data).toHaveLength(2));
+    act(() => { fake.fireChanged(); });
+    await waitFor(() => { expect(list.result.current.data).toHaveLength(2); });
   });
 
-  it("unsubscribes on unmount", async () => {
+  it("unsubscribes on unmount", () => {
     const fake = fakePort();
-    const hook = renderHook(() => useTasksChangedInvalidation(), { wrapper: wrapper(fake.port) });
+    const hook = renderHook(() => { useTasksChangedInvalidation(); }, { wrapper: wrapper(fake.port) });
     expect(fake.listenerCount()).toBe(1);
     hook.unmount();
     expect(fake.listenerCount()).toBe(0);

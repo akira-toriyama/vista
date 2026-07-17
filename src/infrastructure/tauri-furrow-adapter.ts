@@ -44,7 +44,7 @@ export function createTauriFurrowAdapter(): FurrowPort {
       }
       let cancelled = false;
       let unlisten: UnlistenFn | undefined;
-      listen(TASKS_CHANGED_EVENT, () => onChange())
+      listen(TASKS_CHANGED_EVENT, () => { onChange(); })
         .then((fn) => {
           if (cancelled) fn();
           else unlisten = fn;
