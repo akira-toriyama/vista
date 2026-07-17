@@ -1,7 +1,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { FurrowPortProvider } from "@/application/furrow-port-context";
+import { FurrowPortProvider } from "@/application/FurrowPortContext";
 import { createQueryClient } from "@/application/query-client";
 import { createTauriFurrowAdapter } from "@/infrastructure/tauri-furrow-adapter";
 import App from "@/ui/app/App";
@@ -23,3 +23,5 @@ ReactDOM.createRoot(rootElement).render(
     </QueryClientProvider>
   </React.StrictMode>,
 );
+// tsxファイルは、アッパーキャメルにして
+// ls-lintで防いで

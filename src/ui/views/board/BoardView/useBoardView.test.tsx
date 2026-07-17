@@ -4,12 +4,12 @@ import { Suspense, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FurrowPort } from "@/application/furrow-port";
 import { makeBoardInfo, makeFurrowPort } from "@/application/furrow-port.mock";
-import { FurrowPortProvider } from "@/application/furrow-port-context";
+import { FurrowPortProvider } from "@/application/FurrowPortContext";
 import { createQueryClient } from "@/application/query-client";
 import type { Task } from "@/domain/task";
 import { makeTask } from "@/domain/task.mock";
 import { cardDragData, columnDropData } from "../drag-data";
-import { useBoardView } from "./BoardView.hook";
+import { useBoardView } from "./useBoardView";
 
 type DragData = Record<string | symbol, unknown>;
 
@@ -111,9 +111,11 @@ describe("useBoardView", () => {
     const { ready } = setup();
     await ready();
     const { canMonitor } = monitorConfig();
-    expect(canMonitor({ source: { data: cardDragData("t-1", "ready") } })).toBe(
-      true,
-    );
+    expect(
+      canMonitor({
+        source: { data: cardDragData({ id: "t-1", lane: "ready" }) },
+      }),
+    ).toBe(true);
     expect(canMonitor({ source: { data: { kind: "text" } } })).toBe(false);
   });
 
@@ -121,9 +123,11 @@ describe("useBoardView", () => {
     const { port, ready } = setup();
     await ready();
     monitorConfig().onDrop({
-      source: { data: cardDragData("t-1", "ready") },
+      source: { data: cardDragData({ id: "t-1", lane: "ready" }) },
       location: {
-        current: { dropTargets: [{ data: cardDragData("t-2", "ready") }] },
+        current: {
+          dropTargets: [{ data: cardDragData({ id: "t-2", lane: "ready" }) }],
+        },
       },
     });
     await waitFor(() => {
@@ -135,7 +139,7 @@ describe("useBoardView", () => {
     const { port, ready } = setup();
     await ready();
     monitorConfig().onDrop({
-      source: { data: cardDragData("t-1", "ready") },
+      source: { data: cardDragData({ id: "t-1", lane: "ready" }) },
       location: {
         current: { dropTargets: [{ data: columnDropData("triage") }] },
       },
@@ -151,7 +155,9 @@ describe("useBoardView", () => {
     monitorConfig().onDrop({
       source: { data: { kind: "text" } },
       location: {
-        current: { dropTargets: [{ data: cardDragData("t-2", "ready") }] },
+        current: {
+          dropTargets: [{ data: cardDragData({ id: "t-2", lane: "ready" }) }],
+        },
       },
     });
     expect(port.reorderTask).not.toHaveBeenCalled();
@@ -163,7 +169,7 @@ describe("useBoardView", () => {
     const { port, ready } = setup();
     await ready();
     monitorConfig().onDrop({
-      source: { data: cardDragData("t-1", "ready") },
+      source: { data: cardDragData({ id: "t-1", lane: "ready" }) },
       location: { current: { dropTargets: [] } },
     });
     expect(port.reorderTask).not.toHaveBeenCalled();
@@ -174,9 +180,11 @@ describe("useBoardView", () => {
     const { port, ready } = setup();
     await ready();
     monitorConfig().onDrop({
-      source: { data: cardDragData("t-1", "ready") },
+      source: { data: cardDragData({ id: "t-1", lane: "ready" }) },
       location: {
-        current: { dropTargets: [{ data: cardDragData("t-1", "ready") }] },
+        current: {
+          dropTargets: [{ data: cardDragData({ id: "t-1", lane: "ready" }) }],
+        },
       },
     });
     expect(port.reorderTask).not.toHaveBeenCalled();

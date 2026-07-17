@@ -134,7 +134,11 @@ describe("planDrop properties", () => {
         ? { before: anchor.id }
         : { after: anchor.id };
 
-      const priority = optimisticPriority(cards, placement, dragged.id);
+      const priority = optimisticPriority({
+        cards,
+        placement,
+        draggedId: dragged.id,
+      });
       const resorted = [...others, { ...dragged, priority }].sort(
         (a, b) => a.priority - b.priority || a.id.localeCompare(b.id),
       );
@@ -178,7 +182,7 @@ describe("columnize properties", () => {
   ])(
     "partitions tasks into their lanes, sorted by (priority, id); unknown lanes are dropped",
     ([lanes, tasks]) => {
-      const columns = columnize(tasks, lanes);
+      const columns = columnize({ tasks, lanes });
       expect([...columns.keys()]).toEqual(lanes);
 
       const seen: string[] = [];

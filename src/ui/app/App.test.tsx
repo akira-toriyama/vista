@@ -4,7 +4,7 @@ import { StrictMode, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import type { FurrowPort } from "@/application/furrow-port";
 import { makeFurrowPort } from "@/application/furrow-port.mock";
-import { FurrowPortProvider } from "@/application/furrow-port-context";
+import { FurrowPortProvider } from "@/application/FurrowPortContext";
 import { createQueryClient } from "@/application/query-client";
 import App, { AppComponent } from "./App";
 

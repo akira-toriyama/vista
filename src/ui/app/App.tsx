@@ -1,6 +1,6 @@
 import { BoardView } from "@/ui/views/board/BoardView/BoardView";
-import { ViewBoundary } from "@/ui/views/view-boundary";
-import { useApp } from "./App.hook";
+import { ViewBoundary } from "@/ui/views/ViewBoundary";
+import { useApp } from "./useApp";
 
 /** The app shell: header plus the board behind its error/loading boundary. */
 export function AppComponent() {

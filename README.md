@@ -13,10 +13,7 @@ Requires Node.js + pnpm, Rust (for the Tauri shell), and `furrow` on PATH
 pnpm install
 pnpm dev            # Vite dev server (WebView UI only)
 pnpm tauri dev      # full Tauri app
-pnpm test           # unit (jsdom + Tauri mockIPC) + contract (real furrow)
-pnpm lint           # eslint incl. layer-boundary checks
-pnpm typecheck      # tsc for app + vite config
-pnpm build          # tsc + vite build
+pnpm check          # types + lint + format + test (100% cov) + deadcode + build — same as CI
 ```
 
 ## Architecture

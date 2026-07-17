@@ -13,15 +13,13 @@ const KIND_HEADINGS: Record<FurrowErrorKind, string> = {
   "bad-output": "furrow returned unexpected output",
 };
 
-export function ViewErrorFallback({
-  error,
-  resetErrorBoundary,
-}: FallbackProps) {
+export function ViewErrorFallback(props: FallbackProps) {
   const heading =
-    error instanceof FurrowError
-      ? KIND_HEADINGS[error.kind]
+    props.error instanceof FurrowError
+      ? KIND_HEADINGS[props.error.kind]
       : "Something went wrong";
-  const detail = error instanceof Error ? error.message : String(error);
+  const detail =
+    props.error instanceof Error ? props.error.message : String(props.error);
   return (
     <div
       role="alert"
@@ -31,7 +29,7 @@ export function ViewErrorFallback({
       <p className="max-w-md text-xs break-all text-muted-foreground">
         {detail}
       </p>
-      <Button variant="outline" size="sm" onClick={resetErrorBoundary}>
+      <Button variant="outline" size="sm" onClick={props.resetErrorBoundary}>
         Retry
       </Button>
     </div>
@@ -54,12 +52,12 @@ function ViewLoading() {
  * TanStack Query's error state so remounting refetches; Suspense pairs with
  * the useSuspenseQuery hooks so views read non-nullable data.
  */
-export function ViewBoundary({ children }: { children: ReactNode }) {
+export function ViewBoundary(props: { children: ReactNode }) {
   return (
     <QueryErrorResetBoundary>
       {({ reset }) => (
         <ErrorBoundary onReset={reset} FallbackComponent={ViewErrorFallback}>
-          <Suspense fallback={<ViewLoading />}>{children}</Suspense>
+          <Suspense fallback={<ViewLoading />}>{props.children}</Suspense>
         </ErrorBoundary>
       )}
     </QueryErrorResetBoundary>

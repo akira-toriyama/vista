@@ -22,7 +22,7 @@ export default defineConfig({
         ...coverageConfigDefaults.exclude,
         "src/domain/generated/**", // codegen output (pnpm codegen)
         "src/ui/primitives/**", // vendored shadcn/ui
-        "src/main.tsx", // composition root: wiring only, no logic
+        "src/Main.tsx", // composition root: wiring only, no logic
         "**/*.type.ts", // type-only modules
         "**/*.mock.ts", // test fixtures/factories
         "**/*.test-d.ts", // type tests never execute

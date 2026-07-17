@@ -13,12 +13,7 @@ import { cardDragData, isCardDragData } from "../drag-data";
 import type { OuterProps, Props } from "./TaskCard.type";
 
 /** DnD wiring for one card: draggable + drop target with closest-edge data. */
-export function useTaskCard({
-  task,
-  lane,
-  display,
-  readOnly,
-}: OuterProps): Props {
+export function useTaskCard(props: OuterProps): Props {
   const ref = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
@@ -29,13 +24,12 @@ export function useTaskCard({
     const dropTarget = dropTargetForElements({
       element,
       getData: ({ input }) =>
-        attachClosestEdge(cardDragData(task.id, lane), {
-          element,
-          input,
-          allowedEdges: ["top", "bottom"],
-        }),
+        attachClosestEdge(
+          cardDragData({ id: props.task.id, lane: props.lane }),
+          { element, input, allowedEdges: ["top", "bottom"] },
+        ),
       canDrop: ({ source }) =>
-        isCardDragData(source.data) && source.data.id !== task.id,
+        isCardDragData(source.data) && source.data.id !== props.task.id,
       onDrag: ({ self }) => {
         setClosestEdge(extractClosestEdge(self.data));
       },
@@ -46,11 +40,12 @@ export function useTaskCard({
         setClosestEdge(null);
       },
     });
-    if (readOnly) return dropTarget;
+    if (props.readOnly) return dropTarget;
     return combine(
       draggable({
         element,
-        getInitialData: () => cardDragData(task.id, lane),
+        getInitialData: () =>
+          cardDragData({ id: props.task.id, lane: props.lane }),
         onDragStart: () => {
           setIsDragging(true);
         },
@@ -60,7 +55,15 @@ export function useTaskCard({
       }),
       dropTarget,
     );
-  }, [task.id, lane, readOnly]);
+  }, [props.task.id, props.lane, props.readOnly]);
 
-  return { task, lane, display, readOnly, ref, isDragging, closestEdge };
+  return {
+    task: props.task,
+    lane: props.lane,
+    display: props.display,
+    readOnly: props.readOnly,
+    ref,
+    isDragging,
+    closestEdge,
+  };
 }

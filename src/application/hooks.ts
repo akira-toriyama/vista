@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import { laneCards, optimisticPriority, type DropPlan } from "@/domain/kanban";
 import type { Lane, Task } from "@/domain/task";
 import type { TaskFilter } from "./furrow-port";
-import { useFurrowPort } from "./furrow-port-context";
+import { useFurrowPort } from "./FurrowPortContext";
 import { boardKeys, taskKeys } from "./query-keys";
 
 /**
@@ -100,7 +100,7 @@ export function useDropTask(): UseMutationResult<
       const key = taskKeys.list(filter);
       const snapshot = queryClient.getQueryData<Task[]>(key);
       if (snapshot !== undefined) {
-        const targetCards = laneCards(snapshot, targetLane);
+        const targetCards = laneCards({ tasks: snapshot, lane: targetLane });
         queryClient.setQueryData<Task[]>(
           key,
           snapshot.map((task) => {
@@ -108,7 +108,11 @@ export function useDropTask(): UseMutationResult<
             const priority =
               plan.placement === undefined
                 ? task.priority
-                : optimisticPriority(targetCards, plan.placement, id);
+                : optimisticPriority({
+                    cards: targetCards,
+                    placement: plan.placement,
+                    draggedId: id,
+                  });
             return { ...task, status: targetLane, priority };
           }),
         );

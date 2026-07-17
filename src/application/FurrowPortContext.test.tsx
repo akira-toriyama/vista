@@ -1,7 +1,7 @@
 import { render, renderHook, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { makeFurrowPort } from "./furrow-port.mock";
-import { FurrowPortProvider, useFurrowPort } from "./furrow-port-context";
+import { FurrowPortProvider, useFurrowPort } from "./FurrowPortContext";
 
 describe("FurrowPortProvider", () => {
   it("is stable across identical re-renders", () => {

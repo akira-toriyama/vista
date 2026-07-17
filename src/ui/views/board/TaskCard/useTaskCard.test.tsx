@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { makeTask } from "@/domain/task.mock";
 import { cardDragData } from "../drag-data";
 import { TaskCard } from "./TaskCard";
-import { useTaskCard } from "./TaskCard.hook";
+import { useTaskCard } from "./useTaskCard";
 
 type DragData = Record<string | symbol, unknown>;
 
@@ -75,7 +75,7 @@ describe("useTaskCard", () => {
     expect(adapter.dropTargetForElements).toHaveBeenCalledTimes(1);
     expect(draggableConfig().element).toBe(screen.getByTestId("task-card"));
     expect(draggableConfig().getInitialData()).toEqual(
-      cardDragData("t-1", "ready"),
+      cardDragData({ id: "t-1", lane: "ready" }),
     );
   });
 
@@ -121,21 +121,21 @@ describe("useTaskCard", () => {
   it("accepts other cards but never itself or foreign drags", () => {
     renderCard();
     const { canDrop } = dropTargetConfig();
-    expect(canDrop({ source: { data: cardDragData("t-2", "ready") } })).toBe(
-      true,
-    );
-    expect(canDrop({ source: { data: cardDragData("t-1", "ready") } })).toBe(
-      false,
-    );
+    expect(
+      canDrop({ source: { data: cardDragData({ id: "t-2", lane: "ready" }) } }),
+    ).toBe(true);
+    expect(
+      canDrop({ source: { data: cardDragData({ id: "t-1", lane: "ready" }) } }),
+    ).toBe(false);
     expect(canDrop({ source: { data: { kind: "text" } } })).toBe(false);
   });
 
   it("advertises its id + lane with closest-edge data attached", () => {
     renderCard();
     const data = dropTargetConfig().getData({ input: {} });
-    expect(data).toEqual(cardDragData("t-1", "ready"));
+    expect(data).toEqual(cardDragData({ id: "t-1", lane: "ready" }));
     expect(hitbox.attachClosestEdge).toHaveBeenCalledWith(
-      cardDragData("t-1", "ready"),
+      cardDragData({ id: "t-1", lane: "ready" }),
       expect.objectContaining({ allowedEdges: ["top", "bottom"] }),
     );
   });

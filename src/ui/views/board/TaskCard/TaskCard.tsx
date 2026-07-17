@@ -1,36 +1,33 @@
 import { Flag } from "lucide-react";
 import type { Task } from "@/domain/task";
 import { cn } from "@/ui/lib/utils";
-import { useTaskCard } from "./TaskCard.hook";
+import { useTaskCard } from "./useTaskCard";
 import type { CardDisplayOptions, OuterProps, Props } from "./TaskCard.type";
 
 /** Pure card renderer: every piece of state and behavior arrives via props. */
-export function TaskCardComponent({
-  task,
-  display,
-  ref,
-  isDragging,
-  closestEdge,
-}: Props) {
-  const blocked = task.blocked_by.length > 0;
+// react-hooks/refs: split the injected ref into its own binding — reading other
+// props off an object that also carries a ref trips the rule, so `...props` (the
+// rest) is ref-free and stays on the `props.` read style.
+export function TaskCardComponent({ ref, ...props }: Props) {
+  const blocked = props.task.blocked_by.length > 0;
   return (
     <div
       ref={ref}
       data-testid="task-card"
-      data-task-id={task.id}
+      data-task-id={props.task.id}
       data-blocked={blocked || undefined}
       className={cn(
         "relative cursor-grab rounded-lg border bg-card p-2 text-sm shadow-xs",
         blocked && "opacity-60",
-        isDragging && "opacity-40",
+        props.isDragging && "opacity-40",
       )}
     >
-      {closestEdge !== null && (
+      {props.closestEdge !== null && (
         <div
           data-testid="drop-indicator"
           className={cn(
             "absolute inset-x-0.5 h-0.5 rounded-full bg-primary",
-            closestEdge === "top" ? "-top-[5px]" : "-bottom-[5px]",
+            props.closestEdge === "top" ? "-top-[5px]" : "-bottom-[5px]",
           )}
         />
       )}
@@ -38,52 +35,49 @@ export function TaskCardComponent({
         {blocked && (
           <Flag
             role="img"
-            aria-label={`blocked by ${task.blocked_by.join(", ")}`}
+            aria-label={`blocked by ${props.task.blocked_by.join(", ")}`}
             className="mt-0.5 size-3.5 shrink-0 text-amber-600 dark:text-amber-500"
           />
         )}
-        <span className="leading-snug font-medium">{task.title}</span>
+        <span className="leading-snug font-medium">{props.task.title}</span>
       </div>
-      <CardMeta task={task} display={display} />
+      <CardMeta task={props.task} display={props.display} />
     </div>
   );
 }
 
-function CardMeta({
-  task,
-  display,
-}: {
-  task: Task;
-  display: CardDisplayOptions;
-}) {
-  const showRepo = display.repo && task.repos.length > 0;
-  const showLabels = display.labels && task.labels.length > 0;
+function CardMeta(props: { task: Task; display: CardDisplayOptions }) {
+  const showRepo = props.display.repo && props.task.repos.length > 0;
+  const showLabels = props.display.labels && props.task.labels.length > 0;
   const showPips =
-    display.pips && (task.value !== undefined || task.effort !== undefined);
-  if (!display.id && !showRepo && !showLabels && !showPips) return null;
+    props.display.pips &&
+    (props.task.value !== undefined || props.task.effort !== undefined);
+  if (!props.display.id && !showRepo && !showLabels && !showPips) return null;
   return (
     <div
       data-testid="card-meta"
       className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground"
     >
-      {display.id && <span className="font-mono">{task.id}</span>}
+      {props.display.id && <span className="font-mono">{props.task.id}</span>}
       {showRepo && (
         <span className="truncate">
-          {task.repos.map(repoShorthand).join(" ")}
+          {props.task.repos.map(repoShorthand).join(" ")}
         </span>
       )}
       {showLabels && (
         <span className="flex items-center gap-1">
-          {task.labels.map((label) => (
+          {props.task.labels.map((label) => (
             <LabelDot key={label} label={label} />
           ))}
         </span>
       )}
       {showPips && (
         <span className="ml-auto flex items-center gap-1.5">
-          {task.value !== undefined && <Pips kind="value" count={task.value} />}
-          {task.effort !== undefined && (
-            <Pips kind="effort" count={task.effort} />
+          {props.task.value !== undefined && (
+            <Pips kind="value" count={props.task.value} />
+          )}
+          {props.task.effort !== undefined && (
+            <Pips kind="effort" count={props.task.effort} />
           )}
         </span>
       )}
@@ -96,14 +90,14 @@ function repoShorthand(repo: string): string {
   return repo.slice(repo.lastIndexOf("/") + 1);
 }
 
-function LabelDot({ label }: { label: string }) {
+function LabelDot(props: { label: string }) {
   return (
     <span
       role="img"
-      aria-label={`label ${label}`}
-      title={label}
+      aria-label={`label ${props.label}`}
+      title={props.label}
       className="size-2 rounded-full"
-      style={{ backgroundColor: `oklch(0.65 0.15 ${labelHue(label)})` }}
+      style={{ backgroundColor: `oklch(0.65 0.15 ${labelHue(props.label)})` }}
     />
   );
 }
@@ -116,11 +110,11 @@ function labelHue(label: string): number {
 }
 
 /** 1..5 estimate as pips — value round, effort square, to tell them apart. */
-function Pips({ kind, count }: { kind: "value" | "effort"; count: number }) {
+function Pips(props: { kind: "value" | "effort"; count: number }) {
   return (
     <span
       role="img"
-      aria-label={`${kind} ${count} of 5`}
+      aria-label={`${props.kind} ${props.count} of 5`}
       className="flex items-center gap-0.5"
     >
       {[1, 2, 3, 4, 5].map((i) => (
@@ -128,8 +122,8 @@ function Pips({ kind, count }: { kind: "value" | "effort"; count: number }) {
           key={i}
           className={cn(
             "size-1",
-            kind === "value" ? "rounded-full" : "rounded-[1px]",
-            i <= count ? "bg-muted-foreground" : "bg-border",
+            props.kind === "value" ? "rounded-full" : "rounded-[1px]",
+            i <= props.count ? "bg-muted-foreground" : "bg-border",
           )}
         />
       ))}

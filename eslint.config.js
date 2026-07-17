@@ -11,7 +11,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist/", "src-tauri/target/"] },
+  { ignores: ["dist/", "coverage/", "src-tauri/target/"] },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
@@ -117,7 +117,7 @@ export default tseslint.config(
   },
   // context modules pair a provider component with its accessor hook by design
   {
-    files: ["src/**/*-context.tsx"],
+    files: ["src/**/*Context.tsx"],
     rules: {
       "react-refresh/only-export-components": "off",
     },
@@ -131,7 +131,7 @@ export default tseslint.config(
   },
   // Layer boundaries: ui → application → domain; infrastructure implements
   // application ports. Violations are build errors, not review comments.
-  // Files outside the four layers (src/main.tsx composition root) are not
+  // Files outside the four layers (src/Main.tsx composition root) are not
   // classified as elements, so they stay unrestricted.
   {
     files: ["src/**/*.{ts,tsx}"],

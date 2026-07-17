@@ -5,11 +5,11 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { FurrowError } from "@/application/furrow-error";
 import type { FurrowPort } from "@/application/furrow-port";
-import { FurrowPortProvider } from "@/application/furrow-port-context";
+import { FurrowPortProvider } from "@/application/FurrowPortContext";
 import { useBoardInfo } from "@/application/hooks";
 import { createQueryClient } from "@/application/query-client";
 import type { BoardInfo } from "@/domain/board";
-import { ViewBoundary } from "./view-boundary";
+import { ViewBoundary } from "./ViewBoundary";
 
 const boardInfo = { writable: true, lanes: ["backlog", "done"] } as BoardInfo;
 

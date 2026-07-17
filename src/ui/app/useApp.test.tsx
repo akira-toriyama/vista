@@ -3,9 +3,9 @@ import { renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import { makeFurrowPort } from "@/application/furrow-port.mock";
-import { FurrowPortProvider } from "@/application/furrow-port-context";
+import { FurrowPortProvider } from "@/application/FurrowPortContext";
 import { createQueryClient } from "@/application/query-client";
-import { useApp } from "./App.hook";
+import { useApp } from "./useApp";
 
 describe("useApp", () => {
   it("keeps the .furrow change subscription for the app's lifetime", () => {

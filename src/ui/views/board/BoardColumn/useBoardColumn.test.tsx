@@ -2,7 +2,7 @@ import { act, render, renderHook, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { cardDragData, columnDropData } from "../drag-data";
 import { BoardColumn } from "./BoardColumn";
-import { useBoardColumn } from "./BoardColumn.hook";
+import { useBoardColumn } from "./useBoardColumn";
 
 type DragData = Record<string | symbol, unknown>;
 
@@ -49,7 +49,9 @@ describe("useBoardColumn", () => {
     expect(config.element).toBe(screen.getByTestId("column-body"));
     expect(config.getData()).toEqual(columnDropData("ready"));
     expect(
-      config.canDrop({ source: { data: cardDragData("t-1", "ready") } }),
+      config.canDrop({
+        source: { data: cardDragData({ id: "t-1", lane: "ready" }) },
+      }),
     ).toBe(true);
     expect(config.canDrop({ source: { data: { kind: "text" } } })).toBe(false);
   });
