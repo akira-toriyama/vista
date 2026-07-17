@@ -3,7 +3,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  plugins: [react()],
+  // same compiler pipeline as the app build — tests exercise compiled output
+  plugins: [react({ babel: { plugins: ["babel-plugin-react-compiler"] } })],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

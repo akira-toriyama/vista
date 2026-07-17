@@ -1,5 +1,5 @@
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useBoardInfo, useDropTask, useTaskList } from "@/application/hooks";
 import { columnize, planDrop } from "@/domain/kanban";
 import { Button } from "@/ui/components/ui/button";
@@ -35,10 +35,8 @@ export function BoardView() {
   });
 
   const lanes = board.data?.lanes;
-  const columns = useMemo(
-    () => columnize(tasks.data ?? [], lanes ?? []),
-    [tasks.data, lanes],
-  );
+  // React Compiler memoizes this — identity is stable for the effect below
+  const columns = columnize(tasks.data ?? [], lanes ?? []);
   const readOnly = board.data?.writable !== true;
 
   useEffect(() => {
