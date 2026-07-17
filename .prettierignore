@@ -1,0 +1,8 @@
+# build outputs
+dist/
+src-tauri/target/
+
+# machine-written files — their generators own the formatting
+pnpm-lock.yaml
+src/domain/generated/
+src-tauri/gen/
