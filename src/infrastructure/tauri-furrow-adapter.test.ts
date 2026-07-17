@@ -1,5 +1,5 @@
 import { clearMocks, mockIPC } from "@tauri-apps/api/mocks";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { FurrowError } from "@/application/furrow-error";
 import type { ExecResult } from "./exec";
 import { createTauriFurrowAdapter } from "./tauri-furrow-adapter";
@@ -51,6 +51,22 @@ describe("createTauriFurrowAdapter", () => {
     expect((err as FurrowError).message).toContain("not found");
   });
 
+  it("a message-less rejection still becomes a readable core error", async () => {
+    mockIPC(() => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- simulates a bare rejection value
+      throw "furrow exploded";
+    });
+
+    const err = await createTauriFurrowAdapter()
+      .board()
+      .then(() => {
+        throw new Error("expected rejection");
+      })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(FurrowError);
+    expect((err as FurrowError).message).toBe("furrow exploded");
+  });
+
   it("starts the Rust watcher and listens for tasks://changed", async () => {
     const invoked: string[] = [];
     let handlerId: number | undefined;
@@ -66,9 +82,8 @@ describe("createTauriFurrowAdapter", () => {
     });
 
     const changes: number[] = [];
-    const unsubscribe = createTauriFurrowAdapter().subscribeTasksChanged(() =>
-      changes.push(1),
-    );
+    const port = createTauriFurrowAdapter();
+    const unsubscribe = port.subscribeTasksChanged(() => changes.push(1));
 
     await Promise.resolve(); // let the async listen registration settle
     expect(invoked).toContain("watch_start");
@@ -88,5 +103,75 @@ describe("createTauriFurrowAdapter", () => {
     expect(changes).toHaveLength(1);
 
     unsubscribe();
+
+    // the Rust watcher starts once per adapter, not once per subscriber
+    const unsubscribeAgain = port.subscribeTasksChanged(() => {});
+    await Promise.resolve();
+    expect(invoked.filter((c) => c === "watch_start")).toHaveLength(1);
+    unsubscribeAgain();
+  });
+
+  it("a failed watch_start only degrades live refresh and is retried", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const watchAttempts: number[] = [];
+    mockIPC((cmd) => {
+      if (cmd === "watch_start") {
+        watchAttempts.push(1);
+        throw new Error("fs watcher exploded");
+      }
+      if (cmd === "plugin:event|listen") return 1;
+      return null;
+    });
+
+    const port = createTauriFurrowAdapter();
+    port.subscribeTasksChanged(() => {});
+    await vi.waitFor(() => {
+      expect(error).toHaveBeenCalledWith(
+        "vista: watch_start failed — live refresh disabled",
+        expect.any(Error),
+      );
+    });
+
+    // the failure reset the flag, so the next subscriber retries the watcher
+    port.subscribeTasksChanged(() => {});
+    expect(watchAttempts).toHaveLength(2);
+    error.mockRestore();
+  });
+
+  it("unsubscribing before listen resolves still unregisters the handler", async () => {
+    const invoked: string[] = [];
+    mockIPC((cmd) => {
+      invoked.push(cmd);
+      if (cmd === "watch_start") return true;
+      if (cmd === "plugin:event|listen") return 1;
+      if (cmd === "plugin:event|unlisten") return null;
+      return null;
+    });
+
+    const unsubscribe = createTauriFurrowAdapter().subscribeTasksChanged(
+      () => {},
+    );
+    unsubscribe(); // listen's promise has not settled yet
+    await vi.waitFor(() => {
+      expect(invoked).toContain("plugin:event|unlisten");
+    });
+  });
+
+  it("a failed listen registration is logged, not thrown", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockIPC((cmd) => {
+      if (cmd === "watch_start") return true;
+      if (cmd === "plugin:event|listen") throw new Error("event bus down");
+      return null;
+    });
+
+    createTauriFurrowAdapter().subscribeTasksChanged(() => {});
+    await vi.waitFor(() => {
+      expect(error).toHaveBeenCalledWith(
+        "vista: tasks://changed listen failed",
+        expect.any(Error),
+      );
+    });
+    error.mockRestore();
   });
 });

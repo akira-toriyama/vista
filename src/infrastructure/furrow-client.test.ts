@@ -173,6 +173,27 @@ describe("createFurrowClient mutations", () => {
     ]);
   });
 
+  it("setTask mirrors value/effort: clear one, set the other", async () => {
+    const { calls, exec } = fakeExec(shard);
+    await createFurrowClient(exec).setTask("t-a", {
+      value: null,
+      effort: 3,
+      type: "epic",
+    });
+    expect(calls).toEqual([
+      [
+        "set",
+        "t-a",
+        "--json",
+        "--clear-value",
+        "--effort",
+        "3",
+        "--type",
+        "epic",
+      ],
+    ]);
+  });
+
   it("setTask maps placement onto --before/--after/-p in the same write", async () => {
     const { calls, exec } = fakeExec(shard);
     const client = createFurrowClient(exec);
