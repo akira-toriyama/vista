@@ -22,6 +22,8 @@ export default defineConfig({
         ...coverageConfigDefaults.exclude,
         "src/domain/generated/**", // codegen output (pnpm codegen)
         "src/ui/primitives/**", // vendored shadcn/ui
+        "src/ui/_bakeoff/**",
+        "src/ui/_ergonomics/**", // t-wf4p throwaway
         "src/main.tsx", // composition root: wiring only, no logic
         "**/*.type.ts", // type-only modules
         "**/*.mock.ts", // test fixtures/factories

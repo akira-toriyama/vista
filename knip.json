@@ -3,5 +3,6 @@
   "entry": ["scripts/*.mjs"],
   "project": ["src/**", "scripts/**", "tests/**"],
   "ignoreBinaries": ["furrow"],
+  "ignore": ["src/ui/_bakeoff/**", "src/ui/_ergonomics/**"],
   "ignoreExportsUsedInFile": true
 }

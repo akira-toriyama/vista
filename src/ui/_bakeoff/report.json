@@ -1,0 +1,206 @@
+[
+  {
+    "candidate": "Base UI",
+    "pkg": "@base-ui/react",
+    "version": "1.6.0",
+    "jsdomWorks": true,
+    "jsdomError": null,
+    "sidePeek": {
+      "bodyWhileOpen": {
+        "pointerEvents": "",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      },
+      "bodyAfterClose": {
+        "pointerEvents": "",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      },
+      "scrollLocked": false,
+      "backgroundDead": false,
+      "focusTrapped": true,
+      "shielding": {
+        "ariaHiddenCount": 1,
+        "inertCount": 0,
+        "technique": "aria-hidden"
+      },
+      "focusWhileOpen": "inside:button[bakeoff-sidepeek-close]",
+      "focusAfterClose": "outside:button[bakeoff-opener]",
+      "partialModalityAchieved": true
+    },
+    "cycles": {
+      "count": 20,
+      "bodyCleanAfterAll": true,
+      "residue": {
+        "pointerEvents": "",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      }
+    },
+    "menuToDialog": {
+      "chainWorks": true,
+      "bodyAfterBothClosed": {
+        "pointerEvents": "",
+        "overflow": "hidden",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      },
+      "error": null
+    },
+    "ime": {
+      "prematureCommit": false,
+      "error": null
+    },
+    "compiler": {
+      "presenterRendersOnUnrelatedUpdate": 0
+    },
+    "notes": []
+  },
+  {
+    "candidate": "React Aria Components",
+    "pkg": "react-aria-components",
+    "version": "1.19.0",
+    "jsdomWorks": true,
+    "jsdomError": null,
+    "sidePeek": {
+      "bodyWhileOpen": {
+        "pointerEvents": "",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      },
+      "bodyAfterClose": {
+        "pointerEvents": "",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      },
+      "scrollLocked": false,
+      "backgroundDead": false,
+      "focusTrapped": true,
+      "shielding": {
+        "ariaHiddenCount": 0,
+        "inertCount": 0,
+        "technique": "none"
+      },
+      "focusWhileOpen": "inside:section[bakeoff-sidepeek]",
+      "focusAfterClose": "body",
+      "partialModalityAchieved": true
+    },
+    "cycles": {
+      "count": 20,
+      "bodyCleanAfterAll": true,
+      "residue": {
+        "pointerEvents": "",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      }
+    },
+    "menuToDialog": {
+      "chainWorks": true,
+      "bodyAfterBothClosed": {
+        "pointerEvents": "",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      },
+      "error": null
+    },
+    "ime": {
+      "prematureCommit": false,
+      "error": null
+    },
+    "compiler": {
+      "presenterRendersOnUnrelatedUpdate": 0
+    },
+    "notes": []
+  },
+  {
+    "candidate": "Radix UI (control)",
+    "pkg": "radix-ui",
+    "version": "1.6.2",
+    "jsdomWorks": true,
+    "jsdomError": null,
+    "sidePeek": {
+      "bodyWhileOpen": {
+        "pointerEvents": "none",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      },
+      "bodyAfterClose": {
+        "pointerEvents": "",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      },
+      "scrollLocked": false,
+      "backgroundDead": true,
+      "focusTrapped": true,
+      "shielding": {
+        "ariaHiddenCount": 1,
+        "inertCount": 0,
+        "technique": "aria-hidden"
+      },
+      "focusWhileOpen": "inside:button[bakeoff-sidepeek-close]",
+      "focusAfterClose": "outside:button[bakeoff-opener]",
+      "partialModalityAchieved": false
+    },
+    "cycles": {
+      "count": 20,
+      "bodyCleanAfterAll": true,
+      "residue": {
+        "pointerEvents": "",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      }
+    },
+    "menuToDialog": {
+      "chainWorks": true,
+      "bodyAfterBothClosed": {
+        "pointerEvents": "",
+        "overflow": "",
+        "paddingRight": "",
+        "htmlOverflow": "",
+        "htmlPaddingRight": "",
+        "position": ""
+      },
+      "error": null
+    },
+    "ime": {
+      "prematureCommit": false,
+      "error": null
+    },
+    "compiler": {
+      "presenterRendersOnUnrelatedUpdate": 0
+    },
+    "notes": []
+  }
+]

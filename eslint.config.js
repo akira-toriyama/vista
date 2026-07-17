@@ -11,7 +11,17 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist/", "src-tauri/target/"] },
+  {
+    ignores: [
+      "dist/",
+      "src-tauri/target/",
+      // t-wf4p throwaway. `_ergonomics/` deliberately contains WRONG usage —
+      // it measures whether each library complains — so linting it is
+      // meaningless. Both die with this branch.
+      "src/ui/_bakeoff/",
+      "src/ui/_ergonomics/",
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
