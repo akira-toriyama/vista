@@ -1,81 +1,18 @@
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import {
-  draggable,
-  dropTargetForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/types";
 import { Flag } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import type { Lane, Task } from "@/domain/task";
+import type { Task } from "@/domain/task";
 import { cn } from "@/ui/lib/utils";
-import { cardDragData, isCardDragData } from "./drag-data";
+import { useTaskCard } from "./TaskCard.hook";
+import type { CardDisplayOptions, OuterProps, Props } from "./TaskCard.type";
 
-/** Which optional card fields the board currently renders. */
-export interface CardDisplayOptions {
-  id: boolean;
-  pips: boolean;
-  labels: boolean;
-  repo: boolean;
-}
-
-interface TaskCardProps {
-  task: Task;
-  lane: Lane;
-  display: CardDisplayOptions;
-  /** board not writable → cards render but never register as draggable. */
-  readOnly: boolean;
-}
-
-export function TaskCard({ task, lane, display, readOnly }: TaskCardProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (element === null) return;
-    const dropTarget = dropTargetForElements({
-      element,
-      getData: ({ input }) =>
-        attachClosestEdge(cardDragData(task.id, lane), {
-          element,
-          input,
-          allowedEdges: ["top", "bottom"],
-        }),
-      canDrop: ({ source }) =>
-        isCardDragData(source.data) && source.data.id !== task.id,
-      onDrag: ({ self }) => {
-        setClosestEdge(extractClosestEdge(self.data));
-      },
-      onDragLeave: () => {
-        setClosestEdge(null);
-      },
-      onDrop: () => {
-        setClosestEdge(null);
-      },
-    });
-    if (readOnly) return dropTarget;
-    return combine(
-      draggable({
-        element,
-        getInitialData: () => cardDragData(task.id, lane),
-        onDragStart: () => {
-          setIsDragging(true);
-        },
-        onDrop: () => {
-          setIsDragging(false);
-        },
-      }),
-      dropTarget,
-    );
-  }, [task.id, lane, readOnly]);
-
+/** Pure card renderer: every piece of state and behavior arrives via props. */
+export function TaskCardComponent({
+  task,
+  display,
+  ref,
+  isDragging,
+  closestEdge,
+}: Props) {
   const blocked = task.blocked_by.length > 0;
-
   return (
     <div
       ref={ref}
@@ -90,6 +27,7 @@ export function TaskCard({ task, lane, display, readOnly }: TaskCardProps) {
     >
       {closestEdge !== null && (
         <div
+          data-testid="drop-indicator"
           className={cn(
             "absolute inset-x-0.5 h-0.5 rounded-full bg-primary",
             closestEdge === "top" ? "-top-[5px]" : "-bottom-[5px]",
@@ -124,7 +62,10 @@ function CardMeta({
     display.pips && (task.value !== undefined || task.effort !== undefined);
   if (!display.id && !showRepo && !showLabels && !showPips) return null;
   return (
-    <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
+    <div
+      data-testid="card-meta"
+      className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground"
+    >
       {display.id && <span className="font-mono">{task.id}</span>}
       {showRepo && (
         <span className="truncate">
@@ -152,8 +93,7 @@ function CardMeta({
 
 /** owner/repo → repo (the board is usually scoped to one owner anyway). */
 function repoShorthand(repo: string): string {
-  const parts = repo.split("/");
-  return parts[parts.length - 1] ?? repo;
+  return repo.slice(repo.lastIndexOf("/") + 1);
 }
 
 function LabelDot({ label }: { label: string }) {
@@ -171,7 +111,7 @@ function LabelDot({ label }: { label: string }) {
 /** Deterministic hue so a label keeps its color across sessions and views. */
 function labelHue(label: string): number {
   let hash = 0;
-  for (const ch of label) hash = (hash * 31 + (ch.codePointAt(0) ?? 0)) % 360;
+  for (const ch of label) hash = (hash * 31 + ch.charCodeAt(0)) % 360;
   return hash;
 }
 
@@ -196,3 +136,9 @@ function Pips({ kind, count }: { kind: "value" | "effort"; count: number }) {
     </span>
   );
 }
+
+/* c8 ignore start -- composition line: presenter × hook, covered by board.test */
+export function TaskCard(props: OuterProps) {
+  return <TaskCardComponent {...useTaskCard(props)} />;
+}
+/* c8 ignore stop */

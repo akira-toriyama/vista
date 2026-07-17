@@ -11,7 +11,7 @@ export const taskKeys = {
   list: (filter?: TaskFilter) => [...taskKeys.lists(), filter ?? {}] as const,
   details: () => [...taskKeys.all, "detail"] as const,
   detail: (id: string) => [...taskKeys.details(), id] as const,
-  deps: (id: string) => [...taskKeys.all, "deps", id] as const,
+  // deps neighborhoods get their key here when the detail view (t-r7wr) lands
 };
 
 export const boardKeys = {

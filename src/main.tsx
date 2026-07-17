@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 import { FurrowPortProvider } from "@/application/furrow-port-context";
 import { createQueryClient } from "@/application/query-client";
 import { createTauriFurrowAdapter } from "@/infrastructure/tauri-furrow-adapter";
-import App from "@/ui/App";
+import App from "@/ui/app/App";
 import "@/ui/index.css";
 
 // composition root: the only place a concrete adapter meets the port

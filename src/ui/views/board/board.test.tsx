@@ -4,75 +4,43 @@ import userEvent from "@testing-library/user-event";
 import { Suspense, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import type { FurrowPort } from "@/application/furrow-port";
+import { makeBoardInfo, makeFurrowPort } from "@/application/furrow-port.mock";
 import { FurrowPortProvider } from "@/application/furrow-port-context";
 import { createQueryClient } from "@/application/query-client";
-import type { BoardInfo } from "@/domain/board";
-import type { Task } from "@/domain/task";
-import { BoardView } from "./BoardView";
+import { makeTask } from "@/domain/task.mock";
+import { BoardView } from "./BoardView/BoardView";
 
-const task = (
-  id: string,
-  status: string,
-  priority: number,
-  extra: Partial<Task> = {},
-): Task => ({
-  id,
-  title: `title of ${id}`,
-  status,
-  priority,
-  labels: [],
-  repos: [],
-  deps: [],
-  refs: [],
-  checklist: [],
-  created: "2026-07-16T00:00:00Z",
-  updated: "2026-07-16T00:00:00Z",
-  closed: null,
-  reviewed: null,
-  body: `bodies/${id}.md`,
-  actionable: true,
-  blocked_by: [],
-  container: false,
-  stuck: false,
-  ...extra,
-});
+/**
+ * The board tree wired together: composed BoardView → BoardColumn → TaskCard
+ * with the real drag-and-drop adapter registering against jsdom.
+ */
 
-const tasks: Task[] = [
-  task("t-1", "ready", 200, {
+const tasks = [
+  makeTask({
+    id: "t-1",
+    status: "ready",
+    priority: 200,
     value: 3,
     effort: 2,
     labels: ["bug", "ui"],
     repos: ["akira-toriyama/vista"],
   }),
-  task("t-2", "ready", 100),
-  task("t-3", "backlog", 100, { blocked_by: ["t-9"], actionable: false }),
+  makeTask({ id: "t-2", status: "ready", priority: 100 }),
+  makeTask({
+    id: "t-3",
+    status: "backlog",
+    priority: 100,
+    blocked_by: ["t-9"],
+    actionable: false,
+  }),
 ];
 
-function stubPort(overrides: { writable?: boolean } = {}): FurrowPort {
-  const board = {
-    writable: overrides.writable ?? true,
-    lanes: ["backlog", "ready", "done"],
-  } as BoardInfo;
-  const never = () => new Promise<never>(() => {});
-  return {
-    board: () => Promise.resolve(board),
+function renderBoard(overrides: { writable?: boolean } = {}) {
+  const port: FurrowPort = makeFurrowPort({
+    board: () =>
+      Promise.resolve(makeBoardInfo({ writable: overrides.writable ?? true })),
     listTasks: () => Promise.resolve(tasks),
-    showTask: never,
-    addTask: never,
-    moveTask: never,
-    setTask: never,
-    reorderTask: never,
-    doneTask: never,
-    retitleTask: never,
-    setChecklistItem: never,
-    addDeps: never,
-    removeDeps: never,
-    listDeps: never,
-    subscribeTasksChanged: () => () => {},
-  };
-}
-
-function renderBoard(port: FurrowPort = stubPort()) {
+  });
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={createQueryClient()}>
       <FurrowPortProvider port={port}>
@@ -88,7 +56,7 @@ const cardsIn = (lane: string) =>
     "task-card",
   );
 
-describe("BoardView", () => {
+describe("board (composed)", () => {
   it("renders one column per board lane, in board order, empty lanes included", async () => {
     renderBoard();
     expect(
@@ -112,7 +80,7 @@ describe("BoardView", () => {
     ]);
   });
 
-  it("flags and dims a blocked card, naming its blockers", async () => {
+  it("flags a blocked card and shows its meta fields", async () => {
     renderBoard();
     await screen.findByRole("region", { name: "backlog" });
     const [blocked] = cardsIn("backlog");
@@ -120,19 +88,9 @@ describe("BoardView", () => {
     expect(
       within(blocked!).getByLabelText("blocked by t-9"),
     ).toBeInTheDocument();
-    const [unblocked] = cardsIn("ready");
-    expect(unblocked).not.toHaveAttribute("data-blocked");
-  });
-
-  it("shows id, value/effort pips, label dots and repo shorthand on a card", async () => {
-    renderBoard();
-    await screen.findByRole("region", { name: "ready" });
     const card = cardsIn("ready").find((c) => c.dataset.taskId === "t-1")!;
-    expect(within(card).getByText("t-1")).toBeInTheDocument();
-    expect(within(card).getByLabelText("value 3 of 5")).toBeInTheDocument();
-    expect(within(card).getByLabelText("effort 2 of 5")).toBeInTheDocument();
-    expect(within(card).getByLabelText("label bug")).toBeInTheDocument();
     expect(within(card).getByText("vista")).toBeInTheDocument();
+    expect(within(card).getByLabelText("value 3 of 5")).toBeInTheDocument();
   });
 
   it("display options toggle card fields off and back on", async () => {
@@ -158,7 +116,7 @@ describe("BoardView", () => {
   });
 
   it("a read-only board (schema upgrade pending) never registers draggables", async () => {
-    renderBoard(stubPort({ writable: false }));
+    renderBoard({ writable: false });
     await screen.findByRole("region", { name: "ready" });
     expect(cardsIn("ready")[0]).not.toHaveAttribute("draggable");
   });

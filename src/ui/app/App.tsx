@@ -1,10 +1,9 @@
-import { useTasksChangedInvalidation } from "@/application/hooks";
-import { BoardView } from "@/ui/views/board/BoardView";
+import { BoardView } from "@/ui/views/board/BoardView/BoardView";
 import { ViewBoundary } from "@/ui/views/view-boundary";
+import { useApp } from "./App.hook";
 
-function App() {
-  // keep every task query in sync with .furrow edits from outside the GUI
-  useTasksChangedInvalidation();
+/** The app shell: header plus the board behind its error/loading boundary. */
+export function AppComponent() {
   return (
     <main className="flex h-screen flex-col">
       <header className="flex items-center border-b px-3 py-2">
@@ -18,5 +17,11 @@ function App() {
     </main>
   );
 }
+
+/* c8 ignore start -- composition line: presenter × hook, covered by App.test */
+function App() {
+  return <AppComponent {...useApp()} />;
+}
+/* c8 ignore stop */
 
 export default App;

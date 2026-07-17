@@ -251,6 +251,35 @@ describe("useDropTask", () => {
     });
   });
 
+  it("writes even when no list query has populated the cache yet", async () => {
+    const { port, writes } = boardPort();
+    const drop = renderHook(() => useDropTask(), { wrapper: wrapper(port) });
+    await act(() =>
+      drop.result.current.mutateAsync({
+        id: "t-1",
+        targetLane: "inbox",
+        plan: { kind: "reorder", placement: { after: "t-3" } },
+      }),
+    );
+    expect(writes).toEqual([["reorder", "t-1", { after: "t-3" }]]);
+  });
+
+  it("a failing write with no cache snapshot has nothing to roll back", async () => {
+    const { port } = boardPort();
+    port.reorderTask = () => Promise.reject(new Error("boom"));
+    const drop = renderHook(() => useDropTask(), { wrapper: wrapper(port) });
+    act(() => {
+      drop.result.current.mutate({
+        id: "t-1",
+        targetLane: "inbox",
+        plan: { kind: "reorder", placement: { after: "t-3" } },
+      });
+    });
+    await waitFor(() => {
+      expect(drop.result.current.isError).toBe(true);
+    });
+  });
+
   it("rolls the cache back when the write fails", async () => {
     const { port } = boardPort();
     port.reorderTask = () => Promise.reject(new Error("boom"));
@@ -312,6 +341,7 @@ describe("useTasksChangedInvalidation", () => {
       },
       { wrapper: wrapper(fake.port) },
     );
+    hook.rerender(); // memo-hit path: the subscription must not re-register
     expect(fake.listenerCount()).toBe(1);
     hook.unmount();
     expect(fake.listenerCount()).toBe(0);
