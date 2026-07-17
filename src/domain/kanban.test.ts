@@ -15,27 +15,33 @@ describe("columnize", () => {
       card("t-a", "backlog", 100),
       card("t-b", "ready", 100),
     ];
-    const columns = columnize(tasks, ["backlog", "ready"]);
+    const columns = columnize({ tasks, lanes: ["backlog", "ready"] });
     expect([...columns.keys()]).toEqual(["backlog", "ready"]);
     expect(columns.get("backlog")!.map((t) => t.id)).toEqual(["t-a"]);
     expect(columns.get("ready")!.map((t) => t.id)).toEqual(["t-b", "t-c"]);
   });
 
   it("keeps lanes with no tasks as empty columns", () => {
-    const columns = columnize([card("t-a", "ready", 1)], ["backlog", "ready"]);
+    const columns = columnize({
+      tasks: [card("t-a", "ready", 1)],
+      lanes: ["backlog", "ready"],
+    });
     expect(columns.get("backlog")).toEqual([]);
   });
 
   it("drops tasks whose status is not a board lane", () => {
-    const columns = columnize([card("t-x", "no-such-lane", 1)], ["backlog"]);
+    const columns = columnize({
+      tasks: [card("t-x", "no-such-lane", 1)],
+      lanes: ["backlog"],
+    });
     expect(columns.get("backlog")).toEqual([]);
   });
 
   it("breaks priority ties by id so order is deterministic", () => {
-    const columns = columnize(
-      [card("t-b", "ready", 100), card("t-a", "ready", 100)],
-      ["ready"],
-    );
+    const columns = columnize({
+      tasks: [card("t-b", "ready", 100), card("t-a", "ready", 100)],
+      lanes: ["ready"],
+    });
     expect(columns.get("ready")!.map((t) => t.id)).toEqual(["t-a", "t-b"]);
   });
 });
@@ -48,7 +54,7 @@ describe("laneCards", () => {
       card("t-c", "backlog", 50),
       card("t-d", "ready", 20),
     ];
-    expect(laneCards(tasks, "ready").map((t) => t.id)).toEqual([
+    expect(laneCards({ tasks, lane: "ready" }).map((t) => t.id)).toEqual([
       "t-d",
       "t-a",
       "t-b",
@@ -198,27 +204,57 @@ describe("optimisticPriority", () => {
   ];
 
   it("between two cards → midpoint of the anchor and its neighbor", () => {
-    expect(optimisticPriority(cards, { before: "t-3" }, "t-x")).toBe(250);
-    expect(optimisticPriority(cards, { after: "t-1" }, "t-x")).toBe(150);
+    expect(
+      optimisticPriority({
+        cards,
+        placement: { before: "t-3" },
+        draggedId: "t-x",
+      }),
+    ).toBe(250);
+    expect(
+      optimisticPriority({
+        cards,
+        placement: { after: "t-1" },
+        draggedId: "t-x",
+      }),
+    ).toBe(150);
   });
 
   it("before the first card / after the last card → just outside the range", () => {
-    expect(optimisticPriority(cards, { before: "t-1" }, "t-x")).toBeLessThan(
-      100,
-    );
-    expect(optimisticPriority(cards, { after: "t-3" }, "t-x")).toBeGreaterThan(
-      300,
-    );
+    expect(
+      optimisticPriority({
+        cards,
+        placement: { before: "t-1" },
+        draggedId: "t-x",
+      }),
+    ).toBeLessThan(100);
+    expect(
+      optimisticPriority({
+        cards,
+        placement: { after: "t-3" },
+        draggedId: "t-x",
+      }),
+    ).toBeGreaterThan(300);
   });
 
   it("ignores the dragged card when picking the neighbor (same-lane reorder)", () => {
     // t-1 dragged after t-2: neighbor above the slot is t-3, not the dragged t-1
-    expect(optimisticPriority(cards, { after: "t-2" }, "t-1")).toBe(250);
+    expect(
+      optimisticPriority({
+        cards,
+        placement: { after: "t-2" },
+        draggedId: "t-1",
+      }),
+    ).toBe(250);
   });
 
   it("unknown anchor falls back to keeping order stable at the end", () => {
     expect(
-      optimisticPriority(cards, { before: "t-missing" }, "t-x"),
+      optimisticPriority({
+        cards,
+        placement: { before: "t-missing" },
+        draggedId: "t-x",
+      }),
     ).toBeGreaterThan(300);
   });
 });
@@ -226,7 +262,11 @@ describe("optimisticPriority", () => {
 describe("optimisticPriority degenerate inputs", () => {
   it("a column holding only the dragged card → 0", () => {
     expect(
-      optimisticPriority([card("t-1", "ready", 100)], { after: "t-1" }, "t-1"),
+      optimisticPriority({
+        cards: [card("t-1", "ready", 100)],
+        placement: { after: "t-1" },
+        draggedId: "t-1",
+      }),
     ).toBe(0);
   });
 });

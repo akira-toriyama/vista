@@ -1,0 +1,12 @@
+# Filenames gate (paired with pnpm check:filenames).
+# Directive: component .tsx must be PascalCase. Test files follow their subject
+# (PascalCase presenter / camelCase useXxx hook or single-word integration test).
+# Vendored primitives and codegen output keep their upstream names.
+ignore:
+  - src/ui/primitives
+  - src/domain/generated
+
+ls:
+  src:
+    .tsx: PascalCase
+    .test.tsx: PascalCase | camelCase

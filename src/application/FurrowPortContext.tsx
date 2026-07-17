@@ -4,16 +4,13 @@ import type { FurrowPort } from "./furrow-port";
 const FurrowPortContext = createContext<FurrowPort | null>(null);
 
 /** Composition root injects the concrete adapter here; ui never sees it. */
-export function FurrowPortProvider({
-  port,
-  children,
-}: {
+export function FurrowPortProvider(props: {
   port: FurrowPort;
   children: ReactNode;
 }) {
   return (
-    <FurrowPortContext.Provider value={port}>
-      {children}
+    <FurrowPortContext.Provider value={props.port}>
+      {props.children}
     </FurrowPortContext.Provider>
   );
 }

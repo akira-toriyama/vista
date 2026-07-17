@@ -5,7 +5,7 @@ import { Suspense, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import type { FurrowPort } from "@/application/furrow-port";
 import { makeBoardInfo, makeFurrowPort } from "@/application/furrow-port.mock";
-import { FurrowPortProvider } from "@/application/furrow-port-context";
+import { FurrowPortProvider } from "@/application/FurrowPortContext";
 import { createQueryClient } from "@/application/query-client";
 import { makeTask } from "@/domain/task.mock";
 import { BoardView } from "./BoardView/BoardView";

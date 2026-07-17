@@ -4,12 +4,7 @@ import { columnDropData, isCardDragData } from "../drag-data";
 import type { OuterProps, Props } from "./BoardColumn.type";
 
 /** DnD wiring for one column: the body accepts cards and signals hover. */
-export function useBoardColumn({
-  lane,
-  cards,
-  display,
-  readOnly,
-}: OuterProps): Props {
+export function useBoardColumn(props: OuterProps): Props {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [isCardOver, setIsCardOver] = useState(false);
 
@@ -18,7 +13,7 @@ export function useBoardColumn({
     if (element === null) return;
     return dropTargetForElements({
       element,
-      getData: () => columnDropData(lane),
+      getData: () => columnDropData(props.lane),
       canDrop: ({ source }) => isCardDragData(source.data),
       onDragEnter: () => {
         setIsCardOver(true);
@@ -30,7 +25,14 @@ export function useBoardColumn({
         setIsCardOver(false);
       },
     });
-  }, [lane]);
+  }, [props.lane]);
 
-  return { lane, cards, display, readOnly, bodyRef, isCardOver };
+  return {
+    lane: props.lane,
+    cards: props.cards,
+    display: props.display,
+    readOnly: props.readOnly,
+    bodyRef,
+    isCardOver,
+  };
 }

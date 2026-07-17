@@ -20,8 +20,8 @@ export interface CardDragData extends DragData {
   lane: Lane;
 }
 
-export function cardDragData(id: string, lane: Lane): CardDragData {
-  return { kind: CARD_KIND, id, lane };
+export function cardDragData(params: { id: string; lane: Lane }): CardDragData {
+  return { kind: CARD_KIND, id: params.id, lane: params.lane };
 }
 
 export function isCardDragData(data: DragData): data is CardDragData {
@@ -46,11 +46,12 @@ function isColumnDropData(data: DragData): data is ColumnDropData {
  * hovered edge) beats the column containing it; a bare column is an
  * end-of-column drop; anything else means the drag ended nowhere useful.
  */
-export function dropTargetFrom(
-  targets: readonly { data: DragData }[],
-  extractEdge: (data: DragData) => Edge | null = extractClosestEdge,
-): { lane: Lane; target: DropTarget } | null {
-  for (const { data } of targets) {
+export function dropTargetFrom(params: {
+  targets: readonly { data: DragData }[];
+  extractEdge?: (data: DragData) => Edge | null;
+}): { lane: Lane; target: DropTarget } | null {
+  const extractEdge = params.extractEdge ?? extractClosestEdge;
+  for (const { data } of params.targets) {
     if (isCardDragData(data)) {
       const edge = extractEdge(data);
       return {

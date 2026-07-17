@@ -15,7 +15,7 @@ export function useBoardView(): Props {
   const board = useBoardInfo();
   const tasks = useTaskList();
   const dropTask = useDropTask();
-  const { mutate: executeDrop } = dropTask;
+  const executeDrop = dropTask.mutate;
   const [display, setDisplay] = useState<CardDisplayOptions>({
     id: true,
     pips: true,
@@ -25,7 +25,7 @@ export function useBoardView(): Props {
 
   const lanes = board.data.lanes;
   // React Compiler memoizes this — identity is stable for the effect below
-  const columns = columnize(tasks.data, lanes);
+  const columns = columnize({ tasks: tasks.data, lanes });
   const readOnly = !board.data.writable;
 
   useEffect(() => {
@@ -33,7 +33,9 @@ export function useBoardView(): Props {
       canMonitor: ({ source }) => isCardDragData(source.data),
       onDrop: ({ source, location }) => {
         if (!isCardDragData(source.data)) return;
-        const resolved = dropTargetFrom(location.current.dropTargets);
+        const resolved = dropTargetFrom({
+          targets: location.current.dropTargets,
+        });
         if (resolved === null) return;
         const plan = planDrop({
           draggedId: source.data.id,
