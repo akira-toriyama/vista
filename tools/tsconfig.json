@@ -1,0 +1,7 @@
+{
+  // Dev tooling (the house ESLint plugin) — same strict bar as the app, but
+  // its own program: node-run, outside src, checked by `pnpm check:types` and
+  // discovered by typescript-eslint's projectService for typed lint.
+  "extends": "../tsconfig.node.json",
+  "include": ["."]
+}
