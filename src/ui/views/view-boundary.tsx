@@ -2,7 +2,7 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { Suspense, type ReactNode } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { FurrowError, type FurrowErrorKind } from "@/application/furrow-error";
-import { Button } from "@/ui/components/ui/button";
+import { Button } from "@/ui/primitives/button";
 
 /** Human wording per furrow failure kind — each fails for a different reason. */
 const KIND_HEADINGS: Record<FurrowErrorKind, string> = {

@@ -30,6 +30,15 @@ export default tseslint.config(
         "error",
         { allowNumber: true },
       ],
+      // an `_`-prefixed arg documents "intentionally unused" (mock signatures)
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
   // config files and node-run scripts stay outside typed lint
@@ -37,13 +46,15 @@ export default tseslint.config(
     files: ["**/*.config.{js,ts,mjs}", "eslint.config.js", "scripts/**/*.mjs"],
     extends: [tseslint.configs.disableTypeChecked],
   },
-  // tests: `!` after a find() is idiomatic — a wrong one fails the assertion
-  // anyway; noop callbacks are legitimate stand-ins
+  // tests + mock factories: `!` after a find() is idiomatic — a wrong one
+  // fails the assertion anyway; noop callbacks are legitimate stand-ins;
+  // asserting on a spy method (expect(port.reorderTask)) never rebinds this
   {
-    files: ["src/**/*.test.{ts,tsx}", "tests/**/*.ts"],
+    files: ["src/**/*.test.{ts,tsx}", "src/**/*.mock.ts", "tests/**/*.ts"],
     rules: {
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-empty-function": "off",
+      "@typescript-eslint/unbound-method": "off",
     },
   },
   {
@@ -70,13 +81,7 @@ export default tseslint.config(
   // presenter/hook injection pattern (t-rz61)
   {
     files: ["src/**/*.tsx"],
-    ignores: [
-      "src/**/*.test.tsx",
-      // pre-pattern views; they migrate to presenter/hook in t-rz61
-      "src/ui/views/board/BoardView.tsx",
-      "src/ui/views/board/BoardColumn.tsx",
-      "src/ui/views/board/TaskCard.tsx",
-    ],
+    ignores: ["src/**/*.test.tsx"],
     plugins: { "use-encapsulation": useEncapsulation },
     rules: { "use-encapsulation/prefer-custom-hooks": "error" },
   },
@@ -105,7 +110,7 @@ export default tseslint.config(
   },
   // vendored shadcn/ui components export variants alongside components
   {
-    files: ["src/ui/components/ui/**/*.tsx"],
+    files: ["src/ui/primitives/**/*.tsx"],
     rules: {
       "react-refresh/only-export-components": "off",
     },

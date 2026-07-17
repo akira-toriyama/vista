@@ -1,5 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
+import { StrictMode } from "react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { FurrowError } from "@/application/furrow-error";
@@ -41,13 +42,16 @@ function Probe() {
 
 function renderProbe(port: FurrowPort) {
   return render(
-    <QueryClientProvider client={createQueryClient()}>
-      <FurrowPortProvider port={port}>
-        <ViewBoundary>
-          <Probe />
-        </ViewBoundary>
-      </FurrowPortProvider>
-    </QueryClientProvider>,
+    // StrictMode double-invokes pure renders → compiler memo-hit coverage
+    <StrictMode>
+      <QueryClientProvider client={createQueryClient()}>
+        <FurrowPortProvider port={port}>
+          <ViewBoundary>
+            <Probe />
+          </ViewBoundary>
+        </FurrowPortProvider>
+      </QueryClientProvider>
+    </StrictMode>,
   );
 }
 
@@ -82,6 +86,14 @@ describe("ViewBoundary", () => {
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Something went wrong");
     expect(alert).toHaveTextContent("boom");
+  });
+
+  it("stringifies a non-Error rejection instead of crashing", async () => {
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- exercises the non-Error path
+    renderProbe(stubPort(() => Promise.reject("plain string failure")));
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Something went wrong");
+    expect(alert).toHaveTextContent("plain string failure");
   });
 
   it("Retry resets the query error state and refetches", async () => {

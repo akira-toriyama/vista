@@ -6,7 +6,7 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { columnize, optimisticPriority, type DropPlan } from "@/domain/kanban";
+import { laneCards, optimisticPriority, type DropPlan } from "@/domain/kanban";
 import type { Lane, Task } from "@/domain/task";
 import type { TaskFilter } from "./furrow-port";
 import { useFurrowPort } from "./furrow-port-context";
@@ -100,8 +100,7 @@ export function useDropTask(): UseMutationResult<
       const key = taskKeys.list(filter);
       const snapshot = queryClient.getQueryData<Task[]>(key);
       if (snapshot !== undefined) {
-        const targetCards =
-          columnize(snapshot, [targetLane]).get(targetLane) ?? [];
+        const targetCards = laneCards(snapshot, targetLane);
         queryClient.setQueryData<Task[]>(
           key,
           snapshot.map((task) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { columnize, optimisticPriority, planDrop } from "./kanban";
+import { columnize, laneCards, optimisticPriority, planDrop } from "./kanban";
 
 /** Minimal card — kanban logic only reads id/status/priority. */
 const card = (id: string, status: string, priority: number) => ({
@@ -37,6 +37,22 @@ describe("columnize", () => {
       ["ready"],
     );
     expect(columns.get("ready")!.map((t) => t.id)).toEqual(["t-a", "t-b"]);
+  });
+});
+
+describe("laneCards", () => {
+  it("picks one lane's tasks in render order, ties broken by id", () => {
+    const tasks = [
+      card("t-b", "ready", 100),
+      card("t-a", "ready", 100),
+      card("t-c", "backlog", 50),
+      card("t-d", "ready", 20),
+    ];
+    expect(laneCards(tasks, "ready").map((t) => t.id)).toEqual([
+      "t-d",
+      "t-a",
+      "t-b",
+    ]);
   });
 });
 
@@ -161,6 +177,19 @@ describe("planDrop", () => {
   });
 });
 
+describe("planDrop degenerate inputs", () => {
+  it("same-lane column drop with no cards → nothing to change", () => {
+    const plan = planDrop({
+      draggedId: "t-1",
+      sourceLane: "ready",
+      targetLane: "ready",
+      targetCards: [],
+      target: { type: "column" },
+    });
+    expect(plan).toBeNull();
+  });
+});
+
 describe("optimisticPriority", () => {
   const cards = [
     card("t-1", "ready", 100),
@@ -191,5 +220,13 @@ describe("optimisticPriority", () => {
     expect(
       optimisticPriority(cards, { before: "t-missing" }, "t-x"),
     ).toBeGreaterThan(300);
+  });
+});
+
+describe("optimisticPriority degenerate inputs", () => {
+  it("a column holding only the dragged card → 0", () => {
+    expect(
+      optimisticPriority([card("t-1", "ready", 100)], { after: "t-1" }, "t-1"),
+    ).toBe(0);
   });
 });

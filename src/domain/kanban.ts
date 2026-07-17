@@ -46,6 +46,13 @@ export function columnize<T extends KanbanCard>(
   return columns;
 }
 
+/** One lane's column: its tasks in board render order (see columnize). */
+export function laneCards<T extends KanbanCard>(tasks: T[], lane: Lane): T[] {
+  return tasks
+    .filter((task) => task.status === lane)
+    .sort((a, b) => a.priority - b.priority || a.id.localeCompare(b.id));
+}
+
 export interface DropArgs<T extends KanbanCard> {
   draggedId: string;
   sourceLane: Lane;
