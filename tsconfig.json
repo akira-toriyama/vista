@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "preserve",
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "noEmit": true,
     "jsx": "react-jsx",
+
+    /* Globals: nothing ambient — vite/client comes in via vite-env.d.ts */
+    "types": [],
 
     /* Linting */
     "strict": true,
@@ -24,10 +24,11 @@
     "erasableSyntaxOnly": true,
 
     /* Paths */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "tests"]
+  "include": ["src", "tests"],
+  /* contract tests run under Node against the real binary — tsconfig.node.json */
+  "exclude": ["tests/contract"]
 }
