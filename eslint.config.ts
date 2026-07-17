@@ -9,6 +9,7 @@ import testingLibrary from "eslint-plugin-testing-library";
 import useEncapsulation from "eslint-plugin-use-encapsulation";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import house from "./tools/eslint-house/index.ts";
 
 export default tseslint.config(
   { ignores: ["dist/", "coverage/", "src-tauri/target/"] },
@@ -43,7 +44,7 @@ export default tseslint.config(
   },
   // config files and node-run scripts stay outside typed lint
   {
-    files: ["**/*.config.{js,ts,mjs}", "eslint.config.js", "scripts/**/*.mjs"],
+    files: ["**/*.config.{js,ts,mjs}", "eslint.config.ts", "scripts/**/*.mjs"],
     extends: [tseslint.configs.disableTypeChecked],
   },
   // tests + mock factories: `!` after a find() is idiomatic — a wrong one
@@ -84,6 +85,28 @@ export default tseslint.config(
     ignores: ["src/**/*.test.tsx"],
     plugins: { "use-encapsulation": useEncapsulation },
     rules: { "use-encapsulation/prefer-custom-hooks": "error" },
+  },
+  // house conventions, machine-enforced (t-w5rg). Production src only —
+  // tests/mocks read positionally and destructure freely; vendored primitives
+  // and codegen keep their upstream style; type/type-test modules hold no
+  // runtime functions. Legitimate deviations use eslint-disable + a reason.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [
+      "src/**/*.test.{ts,tsx}",
+      "src/**/*.mock.ts",
+      "src/**/*.test-d.ts",
+      "src/**/*.type.ts",
+      "src/**/*.d.ts",
+      "src/ui/primitives/**",
+      "src/domain/generated/**",
+    ],
+    plugins: { house },
+    rules: {
+      "house/function-declarations": "error",
+      "house/params-object": "error",
+      "house/no-param-destructure": "error",
+    },
   },
   // test hygiene: no stray .skip / expect-less tests; RTL role-first queries
   {

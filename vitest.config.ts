@@ -54,6 +54,16 @@ export default defineConfig({
           include: ["tests/contract/**/*.test.ts"],
         },
       },
+      {
+        // house ESLint rules: RuleTester valid/invalid over the tseslint
+        // parser. Dev tooling, so outside the src coverage gate above.
+        extends: true,
+        test: {
+          name: "eslint-rules",
+          environment: "node",
+          include: ["tools/eslint-house/**/*.test.ts"],
+        },
+      },
     ],
   },
 });
