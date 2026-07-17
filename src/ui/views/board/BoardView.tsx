@@ -34,10 +34,10 @@ export function BoardView() {
     repo: true,
   });
 
-  const lanes = board.data?.lanes;
+  const lanes = board.data.lanes;
   // React Compiler memoizes this — identity is stable for the effect below
-  const columns = columnize(tasks.data ?? [], lanes ?? []);
-  const readOnly = board.data?.writable !== true;
+  const columns = columnize(tasks.data, lanes);
+  const readOnly = !board.data.writable;
 
   useEffect(() => {
     return monitorForElements({
@@ -78,7 +78,7 @@ export function BoardView() {
         ))}
       </div>
       <div className="flex min-h-0 flex-1 items-stretch gap-2.5 overflow-x-auto px-3 pb-3">
-        {(lanes ?? []).map((lane) => (
+        {lanes.map((lane) => (
           <BoardColumn
             key={lane}
             lane={lane}
