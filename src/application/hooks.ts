@@ -7,7 +7,7 @@ import {
 import { useEffect } from "react";
 import { columnize, optimisticPriority, type DropPlan } from "@/domain/kanban";
 import type { Lane, Task } from "@/domain/task";
-import type { AddTaskInput, SetTaskPatch, TaskFilter } from "./furrow-port";
+import type { TaskFilter } from "./furrow-port";
 import { useFurrowPort } from "./furrow-port-context";
 import { boardKeys, taskKeys } from "./query-keys";
 
@@ -32,14 +32,6 @@ export function useTaskDetail(id: string) {
   });
 }
 
-export function useDepNeighborhood(id: string) {
-  const port = useFurrowPort();
-  return useQuery({
-    queryKey: taskKeys.deps(id),
-    queryFn: () => port.listDeps(id),
-  });
-}
-
 /**
  * Every write invalidates the whole ['tasks'] subtree: any mutation can flip
  * other rows' actionable/blocked_by, so per-key surgery would be wrong, and
@@ -56,22 +48,10 @@ function useTaskMutation<TInput>(
   });
 }
 
-export function useAddTask() {
-  const port = useFurrowPort();
-  return useTaskMutation((input: AddTaskInput) => port.addTask(input));
-}
-
 export function useMoveTask() {
   const port = useFurrowPort();
   return useTaskMutation(({ id, lane }: { id: string; lane: Lane }) =>
     port.moveTask(id, lane),
-  );
-}
-
-export function useSetTask() {
-  const port = useFurrowPort();
-  return useTaskMutation(({ id, patch }: { id: string; patch: SetTaskPatch }) =>
-    port.setTask(id, patch),
   );
 }
 
@@ -134,40 +114,6 @@ export function useDropTask(): UseMutationResult<
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: taskKeys.all }),
   });
-}
-
-export function useDoneTask() {
-  const port = useFurrowPort();
-  return useTaskMutation((id: string) => port.doneTask(id));
-}
-
-export function useRetitleTask() {
-  const port = useFurrowPort();
-  return useTaskMutation(({ id, title }: { id: string; title: string }) =>
-    port.retitleTask(id, title),
-  );
-}
-
-export function useSetChecklistItem() {
-  const port = useFurrowPort();
-  return useTaskMutation(
-    ({ id, index, done }: { id: string; index: number; done: boolean }) =>
-      port.setChecklistItem(id, index, done),
-  );
-}
-
-export function useAddDeps() {
-  const port = useFurrowPort();
-  return useTaskMutation(({ id, deps }: { id: string; deps: string[] }) =>
-    port.addDeps(id, deps),
-  );
-}
-
-export function useRemoveDeps() {
-  const port = useFurrowPort();
-  return useTaskMutation(({ id, deps }: { id: string; deps: string[] }) =>
-    port.removeDeps(id, deps),
-  );
 }
 
 /**

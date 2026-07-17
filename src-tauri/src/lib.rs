@@ -49,7 +49,6 @@ fn watch_start(app: AppHandle, state: State<'_, AppState>) -> Result<bool, error
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
             furrow_resolve,
