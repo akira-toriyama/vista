@@ -1,0 +1,7 @@
+{
+  /* Node-side program (real furrow binary): same options as the root
+     tsconfig.node.json; a dedicated file here is what lets the ESLint
+     projectService pick these tests up (it resolves the nearest tsconfig). */
+  "extends": "../../tsconfig.node.json",
+  "include": ["."]
+}

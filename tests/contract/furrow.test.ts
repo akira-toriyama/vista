@@ -27,7 +27,10 @@ function makeExec(cwd: string): FurrowExec {
     new Promise<ExecResult>((resolve, reject) => {
       execFile("furrow", args, { cwd }, (error, stdout, stderr) => {
         if (error && typeof error.code !== "number") {
-          reject(error); // spawn failure (ENOENT…), not a furrow exit code
+          // spawn failure (ENOENT…), not a furrow exit code. A real Error at
+          // runtime — @types/node's Omit<ErrnoException> hides the parentage.
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+          reject(error);
           return;
         }
         resolve({ code: error ? (error.code as number) : 0, stdout, stderr });
@@ -37,7 +40,10 @@ function makeExec(cwd: string): FurrowExec {
 
 async function vendoredSchema(): Promise<{ required: string[] } & Record<string, unknown>> {
   const path = new URL("../../src/domain/generated/furrow.task.schema.json", import.meta.url);
-  return JSON.parse(await readFile(path, "utf8"));
+  return JSON.parse(await readFile(path, "utf8")) as { required: string[] } & Record<
+    string,
+    unknown
+  >;
 }
 
 describe.skipIf(!furrowAvailable)("furrow contract", () => {
@@ -189,7 +195,7 @@ describe.skipIf(!furrowAvailable)("furrow contract", () => {
     expect(report.renumbered).toBeDefined();
     expect(report.renumbered!.length).toBeGreaterThan(0);
     for (const move of report.renumbered!) {
-      expect(move).toMatchObject({ id: expect.stringMatching(/^t-/) });
+      expect(move.id).toMatch(/^t-/);
       expect(typeof move.from).toBe("number");
       expect(typeof move.to).toBe("number");
     }

@@ -33,6 +33,7 @@ describe("createTauriFurrowAdapter", () => {
 
   it("maps a Rust CoreError rejection to FurrowError kind core", async () => {
     mockIPC(() => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- simulates Tauri's plain-object CoreError rejection
       throw { code: "spawn-failed", message: "/no/such/furrow: not found" };
     });
 

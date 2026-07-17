@@ -44,17 +44,17 @@ export function TaskCard({ task, lane, display, readOnly }: TaskCardProps) {
           allowedEdges: ["top", "bottom"],
         }),
       canDrop: ({ source }) => isCardDragData(source.data) && source.data.id !== task.id,
-      onDrag: ({ self }) => setClosestEdge(extractClosestEdge(self.data)),
-      onDragLeave: () => setClosestEdge(null),
-      onDrop: () => setClosestEdge(null),
+      onDrag: ({ self }) => { setClosestEdge(extractClosestEdge(self.data)); },
+      onDragLeave: () => { setClosestEdge(null); },
+      onDrop: () => { setClosestEdge(null); },
     });
     if (readOnly) return dropTarget;
     return combine(
       draggable({
         element,
         getInitialData: () => cardDragData(task.id, lane),
-        onDragStart: () => setIsDragging(true),
-        onDrop: () => setIsDragging(false),
+        onDragStart: () => { setIsDragging(true); },
+        onDrop: () => { setIsDragging(false); },
       }),
       dropTarget,
     );
@@ -144,7 +144,7 @@ function LabelDot({ label }: { label: string }) {
 /** Deterministic hue so a label keeps its color across sessions and views. */
 function labelHue(label: string): number {
   let hash = 0;
-  for (const ch of label) hash = (hash * 31 + ch.codePointAt(0)!) % 360;
+  for (const ch of label) hash = (hash * 31 + (ch.codePointAt(0) ?? 0)) % 360;
   return hash;
 }
 
