@@ -39,6 +39,14 @@ export default defineConfig({
           name: "unit",
           environment: "jsdom",
           include: ["src/**/*.test.{ts,tsx}"],
+          // t-wf4p scratch: `_ergonomics/` deliberately contains WRONG usage to
+          // measure whether each library complains, and its assertions encode
+          // the investigator's beliefs — one of which turned out to be a rAF
+          // race ("pointer open leaves focus on the trigger"), green alone and
+          // red under load. It is evidence, not a suite, so it must not gate.
+          // The bake-off proper (`_bakeoff/`) DOES gate: it is a real
+          // measurement and it stays green.
+          exclude: ["src/ui/_ergonomics/**"],
           setupFiles: ["./tests/setup.unit.ts"],
           // shape-pin type tests (*.test-d.ts) run through tsc here
           typecheck: {
