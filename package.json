@@ -17,6 +17,7 @@
     "check:filenames": "ls-lint",
     "check:test": "vitest run --coverage",
     "check:deadcode": "knip",
+    "check:deps": "node scripts/check-exact-deps.mjs",
     "check:build": "pnpm build",
     "test:unit": "vitest run --project unit",
     "test:contract": "vitest run --project contract",
