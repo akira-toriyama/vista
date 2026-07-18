@@ -1,6 +1,8 @@
 import js from "@eslint/js";
 import vitest from "@vitest/eslint-plugin";
 import prettier from "eslint-config-prettier/flat";
+import betterTailwindcss from "eslint-plugin-better-tailwindcss";
+import { getDefaultSelectors } from "eslint-plugin-better-tailwindcss/api/defaults";
 import boundaries from "eslint-plugin-boundaries";
 import jsxA11yX from "eslint-plugin-jsx-a11y-x";
 import reactHooks from "eslint-plugin-react-hooks";
@@ -10,6 +12,21 @@ import useEncapsulation from "eslint-plugin-use-encapsulation";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import house from "./tools/eslint-house/index.ts";
+
+// The class strings prettier-plugin-tailwindcss cannot reach: button.tsx keeps
+// its variant/size classes in variable-assigned Record maps (and a base string),
+// not in className / cn() arguments — so prettier's sort never sees them and a
+// typo there is silent. Point better-tailwindcss's selectors at those variables
+// so both the typo gate and the order rule cover them (glossary / projects
+// t-04yw). `objectValues` reaches the map values; `strings` reaches buttonBase.
+const buttonClassVariables = [
+  { kind: "variable", name: "^buttonBase$", match: [{ type: "strings" }] },
+  {
+    kind: "variable",
+    name: "^button(?:Variant|Size)Classes$",
+    match: [{ type: "objectValues" }],
+  },
+];
 
 export default tseslint.config(
   { ignores: ["dist/", "coverage/", "src-tauri/target/"] },
@@ -274,6 +291,42 @@ export default tseslint.config(
             },
           ],
         },
+      ],
+    },
+  },
+  // Tailwind class-string safety net — the lint substitute for what types
+  // cannot reach: a class string like `bg-primaryy` is not a TS error (it lives
+  // inside an opaque string literal), so the class *strings* are guarded here
+  // while types guard the variant *selection* (glossary / projects t-04yw).
+  // entryPoint resolves against the real @theme so custom tokens (bg-primary,
+  // rounded-md, aria-invalid: …) and arbitrary variants are recognized.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    plugins: { "better-tailwindcss": betterTailwindcss },
+    settings: {
+      "better-tailwindcss": { entryPoint: "src/ui/index.css" },
+    },
+    rules: {
+      // typo / unregistered-class detection everywhere: className, cn() args,
+      // and button.tsx's Record maps (the strings prettier can't see).
+      "better-tailwindcss/no-unknown-classes": [
+        "error",
+        {
+          selectors: [
+            ...getDefaultSelectors(),
+            { kind: "callee", name: "^cn$", match: [{ type: "strings" }] },
+            ...buttonClassVariables,
+          ],
+        },
+      ],
+      // class order only on the Record maps — prettier-plugin-tailwindcss owns
+      // JSX className + cn() literals, so each sorter owns a disjoint surface
+      // and they never fight (both use Tailwind's official order regardless).
+      // `error` (not `warn`) for parity with the prettier order gate, which is
+      // hard-enforced via `check:format`; autofix with `eslint . --fix`.
+      "better-tailwindcss/enforce-consistent-class-order": [
+        "error",
+        { selectors: buttonClassVariables },
       ],
     },
   },
