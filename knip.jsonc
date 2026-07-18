@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  // codegen / build スクリプトと自作 eslint プラグインは参照の起点（entry）
+  "entry": ["scripts/*.mjs", "tools/eslint-house/index.ts"],
+  "project": ["src/**", "scripts/**", "tests/**", "tools/**"],
+  // furrow はホスト PATH 上の CLI（npm の bin ではない）。未解決 binary 扱いを抑止
+  "ignoreBinaries": ["furrow"],
+  // vendored shadcn/Base UI primitives = upstream 所有・`shadcn add` で再生成する領域。
+  // 使う前に置かれ未使用 export（buttonVariants 等）を持つのが正常なので deadcode 対象外。
+  // ※ この ignore が不要化すれば `--treat-config-hints-as-errors` が hint をエラーにして知らせる（消し忘れ防止）
+  "ignore": ["src/ui/primitives/**"],
+  // 同一ファイル内でのみ使う export を「未使用」と誤検知しない（テスト用に公開しつつローカルでも呼ぶ関数など）
+  "ignoreExportsUsedInFile": true,
+}
