@@ -1,5 +1,5 @@
 {
   "plugins": ["prettier-plugin-tailwindcss"],
   "tailwindStylesheet": "./src/ui/index.css",
-  "tailwindFunctions": ["clsx", "cva", "cn", "twMerge"]
+  "tailwindFunctions": ["clsx", "cn", "twMerge"]
 }
