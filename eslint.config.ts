@@ -252,6 +252,31 @@ export default tseslint.config(
       ],
     },
   },
+  // cva / tailwind-variants は使わない（2026-07-17 全廃）。variant は TS 判別 union で
+  // 表現する — 独立軸ライブラリは不正な組合せ（cross-axis 制約）を型で禁止できない
+  // （理由の正典 = projects t-ww01）。shadcn 生成物が cva を持ち込んだら de-cva する。
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "class-variance-authority",
+              message:
+                "cva は使わない。variant は TS 判別 union 型 props + Record マップ + cn() で書く（glossary / projects t-ww01）。",
+            },
+            {
+              name: "tailwind-variants",
+              message:
+                "tailwind-variants も不正な組合せを型で禁止できない。TS 判別 union を使う（glossary）。",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // formatting belongs to Prettier — keep last so it wins over style rules
   prettier,
 );
